@@ -27,6 +27,11 @@ class TileBoard(tk.Frame):
 
         self.tiles=[[Source(root,self,r,i) if r==0 else Tile(root,self,r,i) for i in range(self.total_size_y//self.tile_size)] for r in range(self.total_size_x//self.tile_size)]
 
+        for a in self.tiles:
+            for b in a:
+                b.generate_shortcuts()
+
+
         self.flags={}
         self.relay_states=[]
         self.relay_groups=[]
@@ -80,6 +85,7 @@ class TileBoard(tk.Frame):
 
         self.tiles[x][y].clean_delete()
         self.tiles[x][y]=typ(self.root,self,x,y)
+        self.tiles[x][y].generate_shortcuts()
 
         if(x==self.sel_x and y==self.sel_y):
             self.tiles[x][y].frame.grid(column=1,row=1, sticky="nsew")

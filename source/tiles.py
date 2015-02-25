@@ -31,6 +31,19 @@ class Tile:
 
         self.graphics=[]
 
+        self.connect=[]
+
+    def generate_shortcuts(self):
+        #warning input ints are broken due to list dulpicating
+        if(self.y!=0):
+            self.connect.append(["top",self.board.tiles[self.x][self.y-1],self.board.tiles[self.x][self.y-1].bottom_input])
+        if(len(self.board.tiles[self.x])!=self.y+1):
+            self.connect.append(["bottom",self.board.tiles[self.x][self.y+1],self.board.tiles[self.x][self.y+1].top_input])
+        if(self.x!=0):
+            self.connect.append(["left",self.board.tiles[self.x-1][self.y],self.board.tiles[self.x-1][self.y].right_input])
+        if(len(self.board.tiles)!=self.x+1):
+            self.connect.append(["right",self.board.tiles[self.x+1][self.y],self.board.tiles[self.x+1][self.y].left_input])
+
     def clean_delete(self):
 
         for graphic in self.graphics:
@@ -297,7 +310,7 @@ class Relay(Tile):
 
 
 
-        self.label.config(text=str(self)+str(self.state_index))
+        self.label.config(text=str(self)+str(len(self.connect)))
 
     def output_update(self):
 
