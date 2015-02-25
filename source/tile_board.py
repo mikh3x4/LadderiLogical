@@ -25,10 +25,11 @@ class TileBoard(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
 
 
-        self.tiles=[[Source(root,self,r,i) if r==0 else Relay(root,self,r,i) for i in range(self.total_size_y//self.tile_size)] for r in range(self.total_size_x//self.tile_size)]
+        self.tiles=[[Source(root,self,r,i) if r==0 else Tile(root,self,r,i) for i in range(self.total_size_y//self.tile_size)] for r in range(self.total_size_x//self.tile_size)]
 
         self.flags={}
-
+        self.relay_states=[]
+        self.relay_groups=[]
 
         self.canvas.bind("<ButtonPress-1>", self.click)
         self.canvas.bind("<Shift-ButtonPress-1>", self.shift_click)
@@ -37,8 +38,35 @@ class TileBoard(tk.Frame):
         self.canvas.bind("<Control-B1-Motion>", self.scroll_move)
         # self.canvas.bind('<Motion>',self.motion)
 
-        self.tiles[0][0].state=1
+        self.re_integrate_relays()
         self.update_all()
+
+    def re_integrate_relays(self):
+        self.relay_groups=[]
+
+        for a in self.tiles:
+            for b in a:
+                if(type(b)==Relay):
+                    self.relay_groups.append([b])
+
+        for a in self.tiles:
+            for b in a:
+                if(type(b)==Relay):
+                    b.reintegrate()
+
+        self.relay_states=[]
+        i=0
+
+        for group in self.relay_groups:
+            self.relay_states.append(0)
+
+            for relay in group:
+                print("new",relay,i)
+                relay.state_index=i
+
+            i+=1
+
+
 
 
     def scroll_start(self, event):
@@ -117,17 +145,44 @@ class TileBoard(tk.Frame):
 
     def update_all(self):
 
+        self.re_integrate_relays()#If moved need to reset all states
+
         for a in self.tiles:
             for b in a:
-                b.update()
+                if(type(b)!=Relay):
+                    b.output_update()
+                    b.graphic_update()
+                    b.bottom_input=b.top_input=b.left_input=b.right_input=0
+
+
+        for a in self.tiles:
+            for b in a:
+                if(type(b)==Relay):
+                    b.input_update()
+
+
+        for a in self.tiles:
+            for b in a:
+                if(type(b)==Relay):
+                    b.output_update()
+                    b.graphic_update()
+                    b.bottom_input=b.top_input=b.left_input=b.right_input=0
+
+
+        for a in self.tiles:
+            for b in a:
+                if(type(b)!=Relay):
+                    b.input_update()
+
+
 
         try:
             self.app.io.update()
         except AttributeError:
             print('initialy no board existant')
 
-        print(self.flags)
-        self.after(25,self.update_all)
+        print(self.relay_groups,self.relay_states)
+        self.after(100,self.update_all)
 
         
         # size increase prvision
