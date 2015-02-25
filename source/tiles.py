@@ -42,6 +42,8 @@ class Tile:
 
         self.input_update()
 
+        self.graphic_update()
+
         self.output_update()
 
         self.bottom_input=self.top_input=self.left_input=self.right_input=0
@@ -53,6 +55,8 @@ class Tile:
     def output_update(self):
         pass
 
+    def graphic_update(self):
+        pass
 
 class Relay(Tile):
 
@@ -102,6 +106,7 @@ class Relay(Tile):
             self.board.canvas.itemconfig(self.on_box,fill="")
             self.state=0
 
+    def graphic_update(self):
 
         if(self.top.get()==1):
             self.board.canvas.itemconfig(self.top_box,fill="#00FF00")
@@ -308,8 +313,9 @@ class Switch(Tile):
         self.name=""
 
 
-    def output_update(self):
-
+    
+    def graphic_update(self):
+        
         if(self.top.get()==1):
             self.board.canvas.itemconfig(self.top_box,fill="#00FF00")
         else:
@@ -330,6 +336,7 @@ class Switch(Tile):
         else:
             self.board.canvas.itemconfig(self.right_box,fill="")
 
+    def output_update(self):
         try:
 
             try:
