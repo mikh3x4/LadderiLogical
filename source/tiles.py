@@ -53,12 +53,8 @@ class Tile:
 
     def update(self):
 
-        self.input_update()
-
-        self.graphic_update()
-
         self.output_update()
-
+        self.graphic_update()
         self.bottom_input=self.top_input=self.left_input=self.right_input=0
 
 

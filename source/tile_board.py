@@ -43,25 +43,29 @@ class TileBoard(tk.Frame):
         self.canvas.bind("<Control-B1-Motion>", self.scroll_move)
         # self.canvas.bind('<Motion>',self.motion)
 
-        self.re_integrate_relays()
+        self.reintegrate_tiles()
         self.update_all()
 
-    def re_integrate_relays(self):
+    def reintegrate_tiles(self):
         self.relay_groups=[]
-
-        for a in self.tiles:
-            for b in a:
-                if(type(b)==Relay):
-                    self.relay_groups.append([b])
-
-        for a in self.tiles:
-            for b in a:
-                if(type(b)==Relay):
-                    b.reintegrate()
-
         self.relay_states=[]
-        i=0
 
+        self.relays=[]
+        self.functionals=[]
+
+
+        for a in self.tiles:
+            for b in a:
+                if(type(b)==Relay):
+                    self.relays.append(b)
+                    self.relay_groups.append([b])
+                elif(type(b)!=Relay and type(b)!=Tile):
+                    self.functionals.append(b)
+
+        for relay in self.relays:
+            relay.reintegrate()
+
+        i=0
         for group in self.relay_groups:
             self.relay_states.append(0)
 
@@ -70,8 +74,6 @@ class TileBoard(tk.Frame):
                 relay.state_index=i
 
             i+=1
-
-
 
 
     def scroll_start(self, event):
@@ -89,7 +91,6 @@ class TileBoard(tk.Frame):
 
         if(x==self.sel_x and y==self.sel_y):
             self.tiles[x][y].frame.grid(column=1,row=1, sticky="nsew")
-
 
     def click(self,event):
         self.shift_click(event)
@@ -151,35 +152,19 @@ class TileBoard(tk.Frame):
 
     def update_all(self):
 
-        self.re_integrate_relays()#If moved need to reset all states
+        self.reintegrate_tiles()#If moved need to reset all states
 
-        for a in self.tiles:
-            for b in a:
-                if(type(b)!=Relay):
-                    b.output_update()
-                    b.graphic_update()
-                    b.bottom_input=b.top_input=b.left_input=b.right_input=0
+        for tile in self.functionals:
+            tile.update()
 
+        for tile in self.relays:
+            tile.input_update()
 
-        for a in self.tiles:
-            for b in a:
-                if(type(b)==Relay):
-                    b.input_update()
+        for tile in self.relays:
+            tile.update()
 
-
-        for a in self.tiles:
-            for b in a:
-                if(type(b)==Relay):
-                    b.output_update()
-                    b.graphic_update()
-                    b.bottom_input=b.top_input=b.left_input=b.right_input=0
-
-
-        for a in self.tiles:
-            for b in a:
-                if(type(b)!=Relay):
-                    b.input_update()
-
+        for tile in self.functionals:
+            tile.input_update()
 
 
         try:
