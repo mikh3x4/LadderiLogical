@@ -21,13 +21,13 @@ class Tile:
         self.relay_convert=tk.Button(self.frame,text="Relay",command=lambda :self.board.convert_tile(self.x,self.y,Relay))
         self.source_convert=tk.Button(self.frame,text="Source",command=lambda :self.board.convert_tile(self.x,self.y,Source))
         self.flag_convert=tk.Button(self.frame,text="Flag",command=lambda :self.board.convert_tile(self.x,self.y,Flag))
-        self.switch_convert=tk.Button(self.frame,text="Switch",command=lambda :self.board.convert_tile(self.x,self.y,Switch))
+        self.Generator_convert=tk.Button(self.frame,text="Generator",command=lambda :self.board.convert_tile(self.x,self.y,Generator))
 
         self.tile_convert.pack()
         self.relay_convert.pack()
         self.source_convert.pack()
         self.flag_convert.pack()
-        self.switch_convert.pack()
+        self.Generator_convert.pack()
 
         self.graphics=[]
 
@@ -259,12 +259,7 @@ class Relay(Tile):
         except AttributeError:
             pass
 
-    def update(self):
 
-        self.graphic_update()
-        self.output_update()
-
-        
 
     def input_update(self):
 
@@ -443,7 +438,7 @@ class Flag(Tile):
             self.board.canvas.itemconfig(self.on_box,fill="")
             self.board.flags[self.name][1]=0
 
-class Switch(Tile):
+class Generator(Tile):
 
     def __init__(self, *args):
 
@@ -540,4 +535,4 @@ class Switch(Tile):
                 pass
 
         except KeyError:
-            print('Switch has no input')
+            print('Generator has no input')

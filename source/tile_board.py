@@ -1,4 +1,4 @@
-from tiles import Tile, Relay, Source, Flag, Switch
+from tiles import Tile, Relay, Source, Flag, Generator
 import tkinter as tk
 
 class TileBoard(tk.Frame):
