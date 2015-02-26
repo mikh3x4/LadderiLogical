@@ -8,11 +8,7 @@ class Tile:
         self.root=root
         self.board=board
 
-
-        self.bottom_input=0
-        self.top_input=0
-        self.left_input=0
-        self.right_input=0
+        self.inputs=[0,0,0,0]
 
         self.frame=tk.Frame(master=root)
 
@@ -21,28 +17,44 @@ class Tile:
         self.relay_convert=tk.Button(self.frame,text="Relay",command=lambda :self.board.convert_tile(self.x,self.y,Relay))
         self.source_convert=tk.Button(self.frame,text="Source",command=lambda :self.board.convert_tile(self.x,self.y,Source))
         self.flag_convert=tk.Button(self.frame,text="Flag",command=lambda :self.board.convert_tile(self.x,self.y,Flag))
-        self.Generator_convert=tk.Button(self.frame,text="Generator",command=lambda :self.board.convert_tile(self.x,self.y,Generator))
+        self.generator_convert=tk.Button(self.frame,text="Generator",command=lambda :self.board.convert_tile(self.x,self.y,Generator))
 
         self.tile_convert.pack()
         self.relay_convert.pack()
         self.source_convert.pack()
         self.flag_convert.pack()
-        self.Generator_convert.pack()
+        self.generator_convert.pack()
 
         self.graphics=[]
 
-        self.connect=[]
+        
 
     def generate_shortcuts(self):
-        #warning input ints are broken due to list dulpicating
+
+        self.adj_ind=[]
+
         if(self.y!=0):
-            self.connect.append(["top",self.board.tiles[self.x][self.y-1],self.board.tiles[self.x][self.y-1].bottom_input])
-        if(len(self.board.tiles[self.x])!=self.y+1):
-            self.connect.append(["bottom",self.board.tiles[self.x][self.y+1],self.board.tiles[self.x][self.y+1].top_input])
-        if(self.x!=0):
-            self.connect.append(["left",self.board.tiles[self.x-1][self.y],self.board.tiles[self.x-1][self.y].right_input])
+            self.adj_ind.append((self.x,self.y-1))
+        else:
+            self.adj_ind.append(None)
+
+
         if(len(self.board.tiles)!=self.x+1):
-            self.connect.append(["right",self.board.tiles[self.x+1][self.y],self.board.tiles[self.x+1][self.y].left_input])
+            self.adj_ind.append((self.x+1,self.y))
+        else:
+            self.adj_ind.append(None)
+
+
+        if(len(self.board.tiles[self.x])!=self.y+1):
+            self.adj_ind.append((self.x,self.y+1))
+        else:
+            self.adj_ind.append(None)
+
+        if(self.x!=0):
+            self.adj_ind.append((self.x-1,self.y))
+        else:
+            self.adj_ind.append(None)
+
 
     def clean_delete(self):
 
@@ -55,7 +67,8 @@ class Tile:
 
         self.output_update()
         self.graphic_update()
-        self.bottom_input=self.top_input=self.left_input=self.right_input=0
+
+        self.inputs=[0,0,0,0]
 
 
     def input_update(self):
@@ -78,21 +91,23 @@ class Relay(Tile):
         self.left=tk.IntVar()
         self.right=tk.IntVar()
 
-        self.state_index=0
+        self.conector_checks=[self.top,self.right,self.bottom,self.left]
 
+        self.state_index=0.5 #Float to throw error if not assigened
 
         self.top_cheack=tk.Checkbutton(master=self.frame,text="Top",variable=self.top)
         self.bottom_cheack=tk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
         self.left_cheack=tk.Checkbutton(master=self.frame,text="Left",variable=self.left)
         self.right_cheack=tk.Checkbutton(master=self.frame,text="Right",variable=self.right)
 
-
-        self.label=tk.Label(master=self.frame,text=str(0))
+        
 
         self.top_cheack.pack()
         self.bottom_cheack.pack()
         self.left_cheack.pack()
         self.right_cheack.pack()
+
+        self.label=tk.Label(master=self.frame,text=str(0))
         self.label.pack()
 
 
@@ -104,170 +119,53 @@ class Relay(Tile):
         self.left_box=self.board.canvas.create_line((self.x)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="")
         self.right_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="")
 
-        self.graphics=[self.on_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.relay_box]
+        self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
 
+        self.graphics=[self.on_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.relay_box]
 
 
     def reintegrate(self):
 
+        for ind, check, direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
+            try:
+                if(type(self.board.tiles[ind[0]][ind[1]])==Relay):
+                    if(check.get()==1 and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
+                        s=0
+                        while(self not in self.board.relay_groups[s]):
+                            s+=1
 
-        try:
-            connected=self.board.tiles[self.x][self.y-1]
-            if(type(connected)==Relay):
-                if(self.top.get()==1 and connected.bottom.get()==1):
-                    s=0
-                    while(self not in self.board.relay_groups[s]):
-                        s+=1
+                        if(self.board.tiles[ind[0]][ind[1]] not in self.board.relay_groups[s]):
+                            copy_s=self.board.relay_groups[s].copy()
+                            self.board.relay_groups.pop(s)
 
-                    if(connected not in self.board.relay_groups[s]):
-                        copy_s=self.board.relay_groups[s].copy()
-                        self.board.relay_groups.pop(s)
+                            k=0
+                            while(self.board.tiles[ind[0]][ind[1]] not in self.board.relay_groups[k]):
+                                k+=1
 
-                        k=0
-                        while(connected not in self.board.relay_groups[k]):
-                            k+=1
+                            
+                            copy_k=self.board.relay_groups[k].copy()
+                            self.board.relay_groups.pop(k)
+                            l=[]
 
-                        
-                        copy_k=self.board.relay_groups[k].copy()
-                        self.board.relay_groups.pop(k)
-                        l=[]
+                            for x in copy_s:
+                                l.append(x)
 
-                        for x in copy_s:
-                            l.append(x)
+                            for x in copy_k:
+                                l.append(x)
 
-                        for x in copy_k:
-                            l.append(x)
-
-                        
-                        try:
                             assert(len(set(l))==len(l))
-                        except AssertionError:
-                            print("assertion",l)
-                            raise AssertionError
-                        self.board.relay_groups.append(l)
-        except AttributeError:
-            pass
 
-        try:    
-            connected=self.board.tiles[self.x][self.y+1]
-            if(type(connected)==Relay):
-                if(self.bottom.get()==1 and connected.top.get()==1):
-                    s=0
-                    while(self not in self.board.relay_groups[s]):
-                        s+=1
-
-                    if(connected not in self.board.relay_groups[s]):
-                        copy_s=self.board.relay_groups[s].copy()
-                        self.board.relay_groups.pop(s)
-
-                        k=0
-                        while(connected not in self.board.relay_groups[k]):
-                            k+=1
-
-                        
-                        copy_k=self.board.relay_groups[k].copy()
-                        self.board.relay_groups.pop(k)
-                        l=[]
-
-                        for x in copy_s:
-                            l.append(x)
-
-                        for x in copy_k:
-                            l.append(x)
-
-                        
-                        try:
-                            assert(len(set(l))==len(l))
-                        except AssertionError:
-                            print("assertion",l)
-                            raise AssertionError
-                        self.board.relay_groups.append(l)
-        except AttributeError:
-            pass
-
-        try:    
-            connected=self.board.tiles[self.x-1][self.y]
-            if(type(connected)==Relay):
-                if(self.left.get()==1 and connected.right.get()==1):
-                    s=0
-                    while(self not in self.board.relay_groups[s]):
-                        s+=1
-
-                    if(connected not in self.board.relay_groups[s]):
-                        copy_s=self.board.relay_groups[s].copy()
-                        self.board.relay_groups.pop(s)
-
-                        k=0
-                        while(connected not in self.board.relay_groups[k]):
-                            k+=1
-
-                        
-                        copy_k=self.board.relay_groups[k].copy()
-                        self.board.relay_groups.pop(k)
-                        l=[]
-
-                        for x in copy_s:
-                            l.append(x)
-
-                        for x in copy_k:
-                            l.append(x)
-
-                        
-                        try:
-                            assert(len(set(l))==len(l))
-                        except AssertionError:
-                            print("assertion",l)
-                            raise AssertionError
-                        self.board.relay_groups.append(l)
-        except AttributeError:
-            pass
-
-        try:    
-            connected=self.board.tiles[self.x+1][self.y]
-            if(type(connected)==Relay):
-                if(self.right.get()==1 and connected.left.get()==1):
-                    s=0
-                    while(self not in self.board.relay_groups[s]):
-                        s+=1
-
-                    if(connected not in self.board.relay_groups[s]):
-                        copy_s=self.board.relay_groups[s].copy()
-                        self.board.relay_groups.pop(s)
-
-                        k=0
-                        while(connected not in self.board.relay_groups[k]):
-                            k+=1
-
-                        
-                        copy_k=self.board.relay_groups[k].copy()
-                        self.board.relay_groups.pop(k)
-                        l=[]
-
-                        for x in copy_s:
-                            l.append(x)
-
-                        for x in copy_k:
-                            l.append(x)
-
-                        
-                        try:
-                            assert(len(set(l))==len(l))
-                        except AssertionError:
-                            print("assertion",l)
-                            raise AssertionError
-                        self.board.relay_groups.append(l) 
-        except AttributeError:
-            pass
-
-
+                            self.board.relay_groups.append(l)
+            except AttributeError:
+                print("AttributeError!")
 
     def input_update(self):
 
-        if(self.bottom_input==1 or self.top_input==1 or self.left_input==1 or self.right_input==1):
-            self.board.relay_states[self.state_index]=1
+        for side in self.inputs:
+            if(side==1):
+                self.board.relay_states[self.state_index]=1
 
         
-
 
     def graphic_update(self):
 
@@ -275,68 +173,32 @@ class Relay(Tile):
         if(self.board.relay_states[self.state_index]==1):
             self.board.canvas.itemconfig(self.on_box,fill="#FF0000")
         else:
-            print(self,'removing onness')
             self.board.canvas.itemconfig(self.on_box,fill="")
 
+        for check, box in zip(self.conector_checks,self.graphic_conectors):
+            if(check.get()==1):
+                self.board.canvas.itemconfig(box,fill="#00FF00")
+            else:
+                self.board.canvas.itemconfig(box,fill="")         
 
-        if(self.top.get()==1):
-            self.board.canvas.itemconfig(self.top_box,fill="#00FF00")
-        else:
-            self.board.canvas.itemconfig(self.top_box,fill="")
-
-        if(self.bottom.get()==1):
-            self.board.canvas.itemconfig(self.bottom_box,fill="#00FF00")
-        else:
-            self.board.canvas.itemconfig(self.bottom_box,fill="")
-
-        if(self.left.get()==1):
-            self.board.canvas.itemconfig(self.left_box,fill="#00FF00")
-        else:
-            self.board.canvas.itemconfig(self.left_box,fill="")
-
-        if(self.right.get()==1):
-            self.board.canvas.itemconfig(self.right_box,fill="#00FF00")
-        else:
-            self.board.canvas.itemconfig(self.right_box,fill="")
-
-
-
-        self.label.config(text=str(self)+str(len(self.connect)))
+        self.label.config(text=str(self)+str(self.inputs[3]))
 
     def output_update(self):
 
-        try:
-            if(self.board.relay_states[self.state_index]==1 and self.top.get()==1 and type(self.board.tiles[self.x][self.y-1])!=Relay):
-                self.board.tiles[self.x][self.y-1].bottom_input=1
-        except IndexError:
-            pass
-
-        try:
-            if(self.board.relay_states[self.state_index]==1 and self.bottom.get()==1 and type(self.board.tiles[self.x][self.y+1])!=Relay):
-                self.board.tiles[self.x][self.y+1].top_input=1
-        except IndexError:
-            pass
-
-        try:
-            if(self.board.relay_states[self.state_index]==1 and self.left.get()==1 and type(self.board.tiles[self.x-1][self.y])!=Relay):
-                self.board.tiles[self.x-1][self.y].right_input=1
-        except IndexError:
-            pass
-
-        try:
-            if(self.board.relay_states[self.state_index]==1 and self.right.get()==1 and type(self.board.tiles[self.x+1][self.y])!=Relay):
-                self.board.tiles[self.x+1][self.y].left_input=1
-        except IndexError:
-            pass
+        for check,ind,direction in zip(self.conector_checks,self.adj_ind,[2,3,0,1]):
+            try:
+                if(self.board.relay_states[self.state_index]==1 and check.get()==1 
+                    and type(self.board.tiles[ind[0]][ind[1]])!=Relay 
+                    and ind!=None):
+                    self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
+            except IndexError:
+                print("IndexError")
 
 class Source(Tile):
 
     def __init__(self, *args):
 
         super().__init__(*args)
-
-
-
 
         self.on_box=self.board.canvas.create_rectangle(self.x*self.board.tile_size,self.y*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
 
@@ -349,25 +211,12 @@ class Source(Tile):
 
     def output_update(self):
 
-        try:
-            self.board.tiles[self.x][self.y-1].bottom_input=1
-        except IndexError:
-            pass
-
-        try:
-            self.board.tiles[self.x][self.y+1].top_input=1
-        except IndexError:
-            pass
-
-        try:
-            self.board.tiles[self.x-1][self.y].right_input=1
-        except IndexError:
-            pass
-
-        try:
-            self.board.tiles[self.x+1][self.y].left_input=1
-        except IndexError:
-            pass
+        for ind,direction in zip(self.adj_ind,[2,3,0,1]):
+            try:
+                if(ind!=None):
+                    self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
+            except IndexError:
+                print("IndexError")
 
 class Flag(Tile):
 
@@ -425,10 +274,10 @@ class Flag(Tile):
         del self.board.flags[self.name]
         super().clean_delete()
 
-
     def input_update(self):
 
-        if(self.bottom_input==1 or self.top_input==1 or self.left_input==1 or self.right_input==1):
+
+        if(any(map(lambda x:x==1,self.inputs))):
 
             self.board.canvas.itemconfig(self.on_box,fill="#FF0000")
             self.board.flags[self.name][1]=1
@@ -437,6 +286,7 @@ class Flag(Tile):
         else:
             self.board.canvas.itemconfig(self.on_box,fill="")
             self.board.flags[self.name][1]=0
+
 
 class Generator(Tile):
 
@@ -449,6 +299,7 @@ class Generator(Tile):
         self.left=tk.IntVar()
         self.right=tk.IntVar()
 
+        self.conector_checks=[self.top,self.right,self.bottom,self.left]
 
         self.top_cheack=tk.Checkbutton(master=self.frame,text="Top",variable=self.top)
         self.bottom_cheack=tk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
@@ -478,61 +329,30 @@ class Generator(Tile):
         self.left_box=self.board.canvas.create_line((self.x)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="")
         self.right_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="")
 
+        self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
         self.graphics=[self.on_box,self.sub_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
-
 
         self.name=""
 
-
-    
     def graphic_update(self):
-        
-        if(self.top.get()==1):
-            self.board.canvas.itemconfig(self.top_box,fill="#00FF00")
-        else:
-            self.board.canvas.itemconfig(self.top_box,fill="")
 
-        if(self.bottom.get()==1):
-            self.board.canvas.itemconfig(self.bottom_box,fill="#00FF00")
-        else:
-            self.board.canvas.itemconfig(self.bottom_box,fill="")
-
-        if(self.left.get()==1):
-            self.board.canvas.itemconfig(self.left_box,fill="#00FF00")
-        else:
-            self.board.canvas.itemconfig(self.left_box,fill="")
-
-        if(self.right.get()==1):
-            self.board.canvas.itemconfig(self.right_box,fill="#00FF00")
-        else:
-            self.board.canvas.itemconfig(self.right_box,fill="")
+        for check, box in zip(self.conector_checks,self.graphic_conectors):
+            if(check.get()==1):
+                self.board.canvas.itemconfig(box,fill="#00FF00")
+            else:
+                self.board.canvas.itemconfig(box,fill="")     
 
     def output_update(self):
         try:
 
-            try:
-                if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() and self.top.get()==1):
-                    self.board.tiles[self.x][self.y-1].bottom_input=1
-            except IndexError:
-                pass
-
-            try:
-                if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() and self.bottom.get()==1):
-                    self.board.tiles[self.x][self.y+1].top_input=1
-            except IndexError:
-                pass
-
-            try:
-                if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() and self.left.get()==1):
-                    self.board.tiles[self.x-1][self.y].right_input=1
-            except IndexError:
-                pass
-
-            try:
-                if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() and self.right.get()==1):
-                    self.board.tiles[self.x+1][self.y].left_input=1
-            except IndexError:
-                pass
+            for ind,check,direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
+                try:
+                    if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() 
+                        and check.get()==1
+                        and ind!=None):
+                        self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
+                except IndexError:
+                    pass
 
         except KeyError:
             print('Generator has no input')
