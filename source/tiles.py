@@ -18,12 +18,15 @@ class Tile:
         self.source_convert=tk.Button(self.frame,text="Source",command=lambda :self.board.convert_tile(self.x,self.y,Source))
         self.flag_convert=tk.Button(self.frame,text="Flag",command=lambda :self.board.convert_tile(self.x,self.y,Flag))
         self.generator_convert=tk.Button(self.frame,text="Generator",command=lambda :self.board.convert_tile(self.x,self.y,Generator))
+        self.switch_convert=tk.Button(self.frame,text="Switch",command=lambda :self.board.convert_tile(self.x,self.y,Switch))
+
 
         self.tile_convert.pack()
         self.relay_convert.pack()
         self.source_convert.pack()
         self.flag_convert.pack()
         self.generator_convert.pack()
+        self.switch_convert.pack()
 
         self.graphics=[]
 
@@ -373,3 +376,103 @@ class Generator(Tile):
 
         except KeyError:
             print('Generator has no input')
+
+
+class Switch(Tile):
+
+    def __init__(self, *args):
+
+        super().__init__(*args)
+
+        self.bottom=tk.IntVar()
+        self.top=tk.IntVar()
+        self.left=tk.IntVar()
+        self.right=tk.IntVar()
+
+        self.conector_checks=[self.top,self.right,self.bottom,self.left]
+
+        self.top_cheack=tk.Checkbutton(master=self.frame,text="Top",variable=self.top)
+        self.bottom_cheack=tk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
+        self.left_cheack=tk.Checkbutton(master=self.frame,text="Left",variable=self.left)
+        self.right_cheack=tk.Checkbutton(master=self.frame,text="Right",variable=self.right)
+
+        self.top_cheack.pack()
+        self.bottom_cheack.pack()
+        self.left_cheack.pack()
+        self.right_cheack.pack()
+
+
+        self.invert=tk.IntVar()
+        self.invert_cheack=tk.Checkbutton(master=self.frame,text="Invert",variable=self.invert,onvalue='0',offvalue='1')
+
+        self.invert.set(1)
+        self.invert_cheack.pack()
+
+        self.subscribe_name=tk.Entry(master=self.frame,width=10)
+        self.subscribe_name.pack()
+
+
+
+
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="",outline="")
+
+        self.switch_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#AF20CF",outline="#EEEEEE") 
+
+        self.on_box_top=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.2)*self.board.tile_size+1,fill="",outline="")
+        self.on_box_bottom=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="",outline="")
+        self.on_box_rigth=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="",outline="")
+        self.on_box_left=self.board.canvas.create_rectangle((self.x+0.6)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.2)*self.board.tile_size+1,(self.y+0.6)*self.board.tile_size,fill="",outline="")
+
+
+        self.on_conectors=[self.on_box_top,self.on_box_bottom,self.on_box_rigth,self.on_box_left]
+        self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
+
+
+        self.graphics=[self.switch_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.on_box_top,self.on_box_bottom,self.on_box_rigth,self.on_box_left]
+
+        self.name=""
+        self.state=0
+
+    def graphic_update(self):
+
+        for check, box in zip(self.conector_checks,self.graphic_conectors):
+            if(check.get()==1):
+                self.board.canvas.itemconfig(box,fill="#FF0000")
+            else:
+                self.board.canvas.itemconfig(box,fill="")
+
+        try:
+            if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get()):
+                for box,check in zip(self.on_conectors,self.conector_checks):
+                	if(check.get()==1):
+	                	self.board.canvas.itemconfig(box,fill="#FF0000")
+            else:
+                for box in self.on_conectors:
+                	self.board.canvas.itemconfig(box,fill="")
+        except KeyError:
+            pass
+
+    def input_update(self):
+    	if(self.inputs[1]==1 or self.inputs[3]==1):
+    		self.state=1
+    	else:
+    		self.state=0
+
+
+    def output_update(self):
+        try:
+
+        	if(self.state==1):
+	            for ind,check,direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
+
+	                if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() 
+	                    and check.get()==1
+	                    and ind!=None):
+	                    self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
+
+
+        except KeyError:
+            print('Switch has no input')
