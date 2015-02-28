@@ -12,6 +12,13 @@ class Tile:
 
         self.frame=tk.Frame(master=root)
 
+        self.bottom=tk.IntVar()
+        self.top=tk.IntVar()
+        self.left=tk.IntVar()
+        self.right=tk.IntVar()
+
+        self.conector_checks=[self.top,self.right,self.bottom,self.left]
+
 
         self.tile_convert=tk.Button(self.frame,text="Tile",command=lambda :self.board.convert_tile(self.x,self.y,Tile))
         self.relay_convert=tk.Button(self.frame,text="Relay",command=lambda :self.board.convert_tile(self.x,self.y,Relay))
@@ -19,6 +26,7 @@ class Tile:
         self.flag_convert=tk.Button(self.frame,text="Flag",command=lambda :self.board.convert_tile(self.x,self.y,Flag))
         self.generator_convert=tk.Button(self.frame,text="Generator",command=lambda :self.board.convert_tile(self.x,self.y,Generator))
         self.switch_convert=tk.Button(self.frame,text="Switch",command=lambda :self.board.convert_tile(self.x,self.y,Switch))
+        self.counter_convert=tk.Button(self.frame,text="Counter",command=lambda :self.board.convert_tile(self.x,self.y,Counter))
 
 
         self.tile_convert.pack()
@@ -27,6 +35,7 @@ class Tile:
         self.flag_convert.pack()
         self.generator_convert.pack()
         self.switch_convert.pack()
+        self.counter_convert.pack()
 
         self.graphics=[]
 
@@ -87,12 +96,7 @@ class Relay(Tile):
 
         super().__init__(*args)
 
-        self.bottom=tk.IntVar()
-        self.top=tk.IntVar()
-        self.left=tk.IntVar()
-        self.right=tk.IntVar()
 
-        self.conector_checks=[self.top,self.right,self.bottom,self.left]
 
         self.state_index=0.5 #Float to throw error if not assigened
 
@@ -195,14 +199,14 @@ class Relay(Tile):
                 and ind!=None):
                 self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
 
-
 class Source(Tile):
 
     def __init__(self, *args):
 
         super().__init__(*args)
 
-        
+        for x in self.conector_checks:
+            x.set(1)
 
         self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
         self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
@@ -210,6 +214,7 @@ class Source(Tile):
             self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
         else:
             self.left_box=None
+
         self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
 
         self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="#00FF00",outline="")
@@ -223,7 +228,6 @@ class Source(Tile):
             if(ind!=None):
                 self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
 
-
 class Flag(Tile):
 
     def __init__(self, *args):
@@ -231,6 +235,9 @@ class Flag(Tile):
         super().__init__(*args)
 
         vcmd = (self.root.register(self.validate), '%P', '%s')
+
+        for x in self.conector_checks:
+            x.set(1)
 
 
         self.name_string=tk.StringVar()
@@ -304,12 +311,6 @@ class Generator(Tile):
 
         super().__init__(*args)
 
-        self.bottom=tk.IntVar()
-        self.top=tk.IntVar()
-        self.left=tk.IntVar()
-        self.right=tk.IntVar()
-
-        self.conector_checks=[self.top,self.right,self.bottom,self.left]
 
         self.top_cheack=tk.Checkbutton(master=self.frame,text="Top",variable=self.top)
         self.bottom_cheack=tk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
@@ -377,19 +378,12 @@ class Generator(Tile):
         except KeyError:
             print('Generator has no input')
 
-
 class Switch(Tile):
 
     def __init__(self, *args):
 
         super().__init__(*args)
 
-        self.bottom=tk.IntVar()
-        self.top=tk.IntVar()
-        self.left=tk.IntVar()
-        self.right=tk.IntVar()
-
-        self.conector_checks=[self.top,self.right,self.bottom,self.left]
 
         self.top_cheack=tk.Checkbutton(master=self.frame,text="Top",variable=self.top)
         self.bottom_cheack=tk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
@@ -447,32 +441,131 @@ class Switch(Tile):
         try:
             if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get()):
                 for box,check in zip(self.on_conectors,self.conector_checks):
-                	if(check.get()==1):
-	                	self.board.canvas.itemconfig(box,fill="#FF0000")
+                    if(check.get()==1):
+                        self.board.canvas.itemconfig(box,fill="#FF0000")
             else:
                 for box in self.on_conectors:
-                	self.board.canvas.itemconfig(box,fill="")
+                    self.board.canvas.itemconfig(box,fill="")
         except KeyError:
             pass
 
     def input_update(self):
-    	if(self.inputs[1]==1 or self.inputs[3]==1):
-    		self.state=1
-    	else:
-    		self.state=0
+        if(self.inputs[1]==1 or self.inputs[3]==1):
+            self.state=1
+        else:
+            self.state=0
 
 
     def output_update(self):
         try:
 
-        	if(self.state==1):
-	            for ind,check,direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
+            if(self.state==1):
+                for ind,check,direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
 
-	                if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() 
-	                    and check.get()==1
-	                    and ind!=None):
-	                    self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
+                    if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() 
+                        and check.get()==1
+                        and ind!=None):
+                        self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
 
 
         except KeyError:
             print('Switch has no input')
+
+class Counter(Tile):
+
+    def __init__(self, *args):
+
+        super().__init__(*args)
+
+
+        self.conector_checks[0].set(0)
+        self.conector_checks[1].set(1)
+        self.conector_checks[2].set(1)
+        self.conector_checks[3].set(1)
+
+        vcmd = (self.root.register(self.validate), '%P', '%s')
+
+        self.count_upto=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
+        self.count_upto.pack()
+        self.count_upto.insert(0,"1")
+
+        self.counter=0
+        self.edge=0
+
+        self.auto_reset=tk.IntVar()
+        self.auto_reset_cheack=tk.Checkbutton(master=self.frame,text="Auto Reset",variable=self.auto_reset,onvalue='1',offvalue='0')
+
+        self.auto_reset.set(1)
+        self.auto_reset_cheack.pack()
+
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+
+        self.counter_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#DDDDDD",outline="#EEEEEE") 
+
+        self.text_box=self.board.canvas.create_text((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,text="00+")
+
+
+        self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
+
+        self.graphics=[self.counter_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.text_box]
+
+    def validate(self,P,s):
+
+        try:
+            int(P)
+        except ValueError:
+            return False
+        print('value updated')
+        return True
+
+    def graphic_update(self):
+
+        for check, box in zip(self.conector_checks,self.graphic_conectors):
+            if(check.get()==1):
+                self.board.canvas.itemconfig(box,fill="#FF0000")
+            else:
+                self.board.canvas.itemconfig(box,fill="")
+
+
+        self.board.canvas.itemconfig(self.text_box,text=str(self.counter)+"+")
+
+        if(self.counter>=int(self.count_upto.get())):
+            self.board.canvas.itemconfig(self.text_box,fill="#00FF00")
+        else:
+            self.board.canvas.itemconfig(self.text_box,fill="#000000")
+
+
+    def input_update(self):
+
+        if(self.auto_reset.get()==1):
+            self.bottom.set(0)
+        else:
+            self.bottom.set(1)
+
+        if(self.inputs[3]==0):
+            self.edge=1
+        elif(self.inputs[3]==1):
+            
+            if(self.edge==1 and self.counter<int(self.count_upto.get())):
+                self.counter+=1
+            self.edge=0
+
+        if(self.inputs[2]==1):
+            self.counter=0
+
+
+    def output_update(self):
+        print(self.counter)
+
+        if(self.counter>=int(self.count_upto.get())):
+
+            if(self.auto_reset.get()==1):
+                self.counter=0
+
+            if(self.adj_ind[1]!=None and self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].conector_checks[3]):
+                self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].inputs[3]=1
+
+
