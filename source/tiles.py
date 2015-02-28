@@ -161,8 +161,8 @@ class Relay(Tile):
 
     def input_update(self):
 
-        for side in self.inputs:
-            if(side==1):
+        for side,check in zip(self.inputs,self.conector_checks):
+            if(side==1 and check.get()==1):
                 self.board.relay_states[self.state_index]=1
 
         
@@ -186,13 +186,12 @@ class Relay(Tile):
     def output_update(self):
 
         for check,ind,direction in zip(self.conector_checks,self.adj_ind,[2,3,0,1]):
-            try:
-                if(self.board.relay_states[self.state_index]==1 and check.get()==1 
-                    and type(self.board.tiles[ind[0]][ind[1]])!=Relay 
-                    and ind!=None):
-                    self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
-            except IndexError:
-                print("IndexError")
+
+            if(self.board.relay_states[self.state_index]==1 and check.get()==1 
+                and type(self.board.tiles[ind[0]][ind[1]])!=Relay 
+                and ind!=None):
+                self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
+
 
 class Source(Tile):
 
@@ -217,11 +216,10 @@ class Source(Tile):
     def output_update(self):
 
         for ind,direction in zip(self.adj_ind,[2,3,0,1]):
-            try:
-                if(ind!=None):
-                    self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
-            except IndexError:
-                print("IndexError")
+
+            if(ind!=None):
+                self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
+
 
 class Flag(Tile):
 
@@ -366,13 +364,12 @@ class Generator(Tile):
         try:
 
             for ind,check,direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
-                try:
-                    if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() 
-                        and check.get()==1
-                        and ind!=None):
-                        self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
-                except IndexError:
-                    pass
+
+                if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() 
+                    and check.get()==1
+                    and ind!=None):
+                    self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
+
 
         except KeyError:
             print('Generator has no input')
