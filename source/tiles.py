@@ -68,8 +68,6 @@ class Tile:
         self.output_update()
         self.graphic_update()
 
-        self.inputs=[0,0,0,0]
-
 
     def input_update(self):
         pass
@@ -111,7 +109,7 @@ class Relay(Tile):
         self.label.pack()
 
 
-        self.relay_box=self.board.canvas.create_rectangle(self.x*self.board.tile_size,self.y*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#D0EAC0",outline="")
+        self.relay_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
 
         self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
         self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
@@ -127,37 +125,39 @@ class Relay(Tile):
     def reintegrate(self):
 
         for ind, check, direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
-            try:
-                if(type(self.board.tiles[ind[0]][ind[1]])==Relay):
-                    if(check.get()==1 and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
-                        s=0
-                        while(self not in self.board.relay_groups[s]):
-                            s+=1
 
-                        if(self.board.tiles[ind[0]][ind[1]] not in self.board.relay_groups[s]):
-                            copy_s=self.board.relay_groups[s].copy()
-                            self.board.relay_groups.pop(s)
+            if (ind==None):
+                pass
+            elif (type(self.board.tiles[ind[0]][ind[1]])==Relay):
+                if (check.get()==1 
+                    and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
+                    s=0
+                    while(self not in self.board.relay_groups[s]):
+                        s+=1
 
-                            k=0
-                            while(self.board.tiles[ind[0]][ind[1]] not in self.board.relay_groups[k]):
-                                k+=1
+                    if(self.board.tiles[ind[0]][ind[1]] not in self.board.relay_groups[s]):
+                        copy_s=self.board.relay_groups[s].copy()
+                        self.board.relay_groups.pop(s)
 
-                            
-                            copy_k=self.board.relay_groups[k].copy()
-                            self.board.relay_groups.pop(k)
-                            l=[]
+                        k=0
+                        while(self.board.tiles[ind[0]][ind[1]] not in self.board.relay_groups[k]):
+                            k+=1
 
-                            for x in copy_s:
-                                l.append(x)
+                        
+                        copy_k=self.board.relay_groups[k].copy()
+                        self.board.relay_groups.pop(k)
+                        l=[]
 
-                            for x in copy_k:
-                                l.append(x)
+                        for x in copy_s:
+                            l.append(x)
 
-                            assert(len(set(l))==len(l))
+                        for x in copy_k:
+                            l.append(x)
 
-                            self.board.relay_groups.append(l)
-            except AttributeError:
-                print("AttributeError!")
+                        assert(len(set(l))==len(l))
+
+                        self.board.relay_groups.append(l)
+
 
     def input_update(self):
 
@@ -240,7 +240,7 @@ class Flag(Tile):
         self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
 
 
-        self.pub_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#3b9aeF",outline="")
+        self.pub_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#3b9aeF",outline="#EEEEEE")
         self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="",outline="")
 
         self.graphics=[self.on_box,self.pub_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
@@ -331,16 +331,16 @@ class Generator(Tile):
 
 
 
-        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
-        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
-        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
-        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="",outline="")
 
-        self.sub_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#2e2e2e",outline="") 
+        self.gen_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#2e2e2e",outline="#EEEEEE") 
         self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="",outline="")
 
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
-        self.graphics=[self.on_box,self.sub_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
+        self.graphics=[self.on_box,self.gen_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
 
         self.name=""
 

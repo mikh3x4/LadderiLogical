@@ -11,7 +11,7 @@ class TileBoard(tk.Frame):
         self.size_x=self.size_y=400
         self.tile_size=50
 
-        self.canvas = tk.Canvas(self, width=self.size_x, height=self.size_y, background="#F0EAD6")
+        self.canvas = tk.Canvas(self, width=self.size_x, height=self.size_y, background="#7A7A7a")
         self.xsb = tk.Scrollbar(self, orient="horizontal", command=self.canvas.xview)
         self.ysb = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
         self.canvas.configure(yscrollcommand=self.ysb.set, xscrollcommand=self.xsb.set)
@@ -157,14 +157,20 @@ class TileBoard(tk.Frame):
         for tile in self.functionals:
             tile.update()
 
+
         for tile in self.relays:
             tile.input_update()
+        for tile in self.relays:
+            tile.inputs=[0,0,0,0]
 
         for tile in self.relays:
             tile.update()
 
+
         for tile in self.functionals:
             tile.input_update()
+        for tile in self.functionals:
+            tile.inputs=[0,0,0,0]
 
 
         try:
