@@ -112,15 +112,15 @@ class Relay(Tile):
 
 
         self.relay_box=self.board.canvas.create_rectangle(self.x*self.board.tile_size,self.y*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#D0EAC0",outline="")
-        self.on_box=self.board.canvas.create_rectangle(self.x*self.board.tile_size,self.y*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="",outline="")
 
-        self.top_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y)*self.board.tile_size,fill="")
-        self.bottom_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="")
-        self.left_box=self.board.canvas.create_line((self.x)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="")
-        self.right_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="")
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+
+        self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="",outline="")
 
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
-
         self.graphics=[self.on_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.relay_box]
 
 
@@ -171,13 +171,13 @@ class Relay(Tile):
 
 
         if(self.board.relay_states[self.state_index]==1):
-            self.board.canvas.itemconfig(self.on_box,fill="#FF0000")
+            self.board.canvas.itemconfig(self.on_box,fill="#00FF00")
         else:
             self.board.canvas.itemconfig(self.on_box,fill="")
 
         for check, box in zip(self.conector_checks,self.graphic_conectors):
             if(check.get()==1):
-                self.board.canvas.itemconfig(box,fill="#00FF00")
+                self.board.canvas.itemconfig(box,fill="#FF0000")
             else:
                 self.board.canvas.itemconfig(box,fill="")         
 
@@ -200,12 +200,17 @@ class Source(Tile):
 
         super().__init__(*args)
 
-        self.on_box=self.board.canvas.create_rectangle(self.x*self.board.tile_size,self.y*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
+        
 
-        self.top_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#00FF00")
-        self.bottom_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#00FF00")
-        self.left_box=self.board.canvas.create_line((self.x)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#00FF00")
-        self.right_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#00FF00")
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
+        if(self.x!=0):
+            self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
+        else:
+            self.left_box=None
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+
+        self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="#00FF00",outline="")
 
         self.graphics=[self.on_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
 
@@ -231,11 +236,16 @@ class Flag(Tile):
         self.publish_name=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd,invalidcommand=self.invcmd,textvariable=self.name_string)
         self.publish_name.pack()
 
-        self.on_box=self.board.canvas.create_rectangle(self.x*self.board.tile_size,self.y*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="",outline="")
-        self.pub_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="#0000FF",outline="")
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
 
-        self.graphics=[self.on_box,self.pub_box]
 
+        self.pub_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#3b9aeF",outline="")
+        self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="",outline="")
+
+        self.graphics=[self.on_box,self.pub_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
         self.name=""
 
         self.board.flags[self.name]=[self,0]
@@ -279,14 +289,13 @@ class Flag(Tile):
 
         if(any(map(lambda x:x==1,self.inputs))):
 
-            self.board.canvas.itemconfig(self.on_box,fill="#FF0000")
+            self.board.canvas.itemconfig(self.on_box,fill="#00FF00")
             self.board.flags[self.name][1]=1
 
 
         else:
             self.board.canvas.itemconfig(self.on_box,fill="")
             self.board.flags[self.name][1]=0
-
 
 class Generator(Tile):
 
@@ -321,13 +330,16 @@ class Generator(Tile):
         self.subscribe_name=tk.Entry(master=self.frame,width=10)
         self.subscribe_name.pack()
 
-        self.on_box=self.board.canvas.create_rectangle(self.x*self.board.tile_size,self.y*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="",outline="")
-        self.sub_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#00FF00",outline="")
 
-        self.top_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y)*self.board.tile_size,fill="")
-        self.bottom_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="")
-        self.left_box=self.board.canvas.create_line((self.x)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="")
-        self.right_box=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="")
+
+
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+
+        self.sub_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#2e2e2e",outline="") 
+        self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="",outline="")
 
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
         self.graphics=[self.on_box,self.sub_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
@@ -338,9 +350,17 @@ class Generator(Tile):
 
         for check, box in zip(self.conector_checks,self.graphic_conectors):
             if(check.get()==1):
-                self.board.canvas.itemconfig(box,fill="#00FF00")
+                self.board.canvas.itemconfig(box,fill="#FF0000")
             else:
-                self.board.canvas.itemconfig(box,fill="")     
+                self.board.canvas.itemconfig(box,fill="")
+
+        try:
+            if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get()):
+                self.board.canvas.itemconfig(self.on_box,fill="#00FF00")
+            else:
+                self.board.canvas.itemconfig(self.on_box,fill="")
+        except KeyError:
+            pass
 
     def output_update(self):
         try:
