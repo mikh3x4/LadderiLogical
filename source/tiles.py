@@ -1,4 +1,5 @@
 import tkinter as tk
+from time import time
 
 class Tile:
 
@@ -19,6 +20,7 @@ class Tile:
 
         self.conector_checks=[self.top,self.right,self.bottom,self.left]
 
+        tk.Label(master=self.frame,text="Convert to:").pack()
 
         self.tile_convert=tk.Button(self.frame,text="Tile",command=lambda :self.board.convert_tile(self.x,self.y,Tile))
         self.relay_convert=tk.Button(self.frame,text="Relay",command=lambda :self.board.convert_tile(self.x,self.y,Relay))
@@ -27,6 +29,7 @@ class Tile:
         self.generator_convert=tk.Button(self.frame,text="Generator",command=lambda :self.board.convert_tile(self.x,self.y,Generator))
         self.switch_convert=tk.Button(self.frame,text="Switch",command=lambda :self.board.convert_tile(self.x,self.y,Switch))
         self.counter_convert=tk.Button(self.frame,text="Counter",command=lambda :self.board.convert_tile(self.x,self.y,Counter))
+        self.pulsar_convert=tk.Button(self.frame,text="Pulsar",command=lambda :self.board.convert_tile(self.x,self.y,Pulsar))
 
 
         self.tile_convert.pack()
@@ -36,6 +39,7 @@ class Tile:
         self.generator_convert.pack()
         self.switch_convert.pack()
         self.counter_convert.pack()
+        self.pulsar_convert.pack()
 
         self.graphics=[]
 
@@ -217,7 +221,7 @@ class Source(Tile):
 
         self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
 
-        self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="#00FF00",outline="")
+        self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="#00FF00",outline="#FFFFFF")
 
         self.graphics=[self.on_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
 
@@ -588,4 +592,108 @@ class Counter(Tile):
             if(self.adj_ind[1]!=None and self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].conector_checks[3]):
                 self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].inputs[3]=1
 
+class Pulsar(Tile):
 
+    def __init__(self, *args):
+
+        super().__init__(*args)
+
+
+        self.conector_checks[0].set(0)
+        self.conector_checks[1].set(1)
+        self.conector_checks[2].set(0)
+        self.conector_checks[3].set(1)
+
+        vcmd = (self.root.register(self.validate), '%P', '%s')
+
+        self.time_in=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
+        self.time_in.pack()
+        self.time_in.insert(0,"1000")
+
+        self.time=time()
+
+
+
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+
+        self.pulsar_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#DDDDDD",outline="#EEEEEE") 
+
+        self.pulsar_lines=[]
+        self.pulsar_lines.append(self.board.canvas.create_line((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF"))
+        self.pulsar_lines.append(self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF"))
+        self.pulsar_lines.append(self.board.canvas.create_line((self.x+0.7)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF"))
+        self.pulsar_lines.append(self.board.canvas.create_line((self.x+0.4)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.4)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF"))
+        self.pulsar_lines.append(self.board.canvas.create_line((self.x+0.6)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF"))
+
+        self.pulsar_lines.append(self.board.canvas.create_line((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.4)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#0000FF"))
+        self.pulsar_lines.append(self.board.canvas.create_line((self.x+0.4)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF"))
+        self.pulsar_lines.append(self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#0000FF"))
+        self.pulsar_lines.append(self.board.canvas.create_line((self.x+0.6)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF"))
+
+        self.time_to=1000
+        self.state=0
+        self.prev=0
+
+        self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
+
+        self.graphics=[self.pulsar_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
+        self.graphics.extend(self.pulsar_lines)
+
+
+    def validate(self,P,s):
+
+        if(P==""):
+            self.time_to=100
+            return True
+
+        try:
+            self.time_to=int(P)
+        except ValueError:
+            return False
+        print('value updated')
+        return True
+
+    def graphic_update(self):
+
+        for check, box in zip(self.conector_checks,self.graphic_conectors):
+            if(check.get()==1):
+                self.board.canvas.itemconfig(box,fill="#FF0000")
+            else:
+                self.board.canvas.itemconfig(box,fill="")
+
+
+
+    def input_update(self):
+
+
+
+        if(self.inputs[3]==1):
+            self.state=1
+        else:
+            self.state=0
+            
+
+
+    def output_update(self):
+
+        
+
+        if(1000*(time()-self.time)>int(self.time_to)):
+
+            if(self.prev==0):
+                self.prev=1
+            else:
+                self.prev=0
+
+            self.time=time()
+
+        if(self.adj_ind[1]!=None 
+            and self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].conector_checks[3]
+            and self.prev==1
+            and self.state==1):
+            self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].inputs[3]=1
+
+        

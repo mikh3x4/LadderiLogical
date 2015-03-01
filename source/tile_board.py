@@ -192,7 +192,7 @@ class TileBoard(tk.Frame):
             print('initialy no board existant')
 
 
-        self.after(100,self.update_all)
+        self.after(10,self.update_all)
 
         
         # size increase prvision
