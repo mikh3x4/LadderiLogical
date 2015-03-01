@@ -1,4 +1,4 @@
-from tiles import Tile, Relay, Source, Flag, Generator
+from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter
 import tkinter as tk
 
 class TileBoard(tk.Frame):
@@ -100,11 +100,26 @@ class TileBoard(tk.Frame):
 
         if(self.app.tools.tool=='select'):
             self.select(event)
+        elif(self.app.tools.tool=='hswitch'):
+            self.hswitch(event)            
 
         elif(self.app.tools.tool=='horizontal'):
             self.horizontal(event)
         else:
             print('Unrecognised tool')
+
+    def hswitch(self,event):
+
+        coords=self.find_tile_coords(event)
+
+        x=coords[0]
+        y=coords[1]
+
+        self.convert_tile(x,y,Switch)
+
+        self.tiles[x][y].left.set(1)
+        self.tiles[x][y].right.set(1)
+
 
     def horizontal(self,event):
 

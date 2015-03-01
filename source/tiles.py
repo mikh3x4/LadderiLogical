@@ -240,8 +240,7 @@ class Flag(Tile):
             x.set(1)
 
 
-        self.name_string=tk.StringVar()
-        self.publish_name=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd,invalidcommand=self.invcmd,textvariable=self.name_string)
+        self.publish_name=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd,invalidcommand=self.invcmd)
         self.publish_name.pack()
 
         self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
@@ -254,37 +253,51 @@ class Flag(Tile):
         self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="",outline="")
 
         self.graphics=[self.on_box,self.pub_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
-        self.name=""
 
-        self.board.flags[self.name]=[self,0]
+        self.name=""
+        i=1
+        try:
+            while 1:
+                self.board.flags[self.name+str(i)]
+                i+=1
+        except KeyError:
+
+            self.name=self.name+str(i)
+            self.board.flags[self.name]=[self,0]
+
+        self.publish_name.delete(0,tk.END)
+        self.publish_name.insert(0,self.name)
+
+
 
     def invcmd(self):
 
-        print('invalide')            
-        # self.name_string.set(self.name) BREAKS validation for unknow resons
+        self.publish_name.delete(0,tk.END)
+        self.publish_name.insert(0,self.name)
+        self.publish_name.config(validate="key")# BREAKS validation for unknow resons
 
     def validate(self, P, s):
-        print('validation run')
-
-        if(self.name!=P and self.board.flags[self.name][0]==self):
-            del self.board.flags[self.name]
-            self.name=P 
-
+        del self.board.flags[self.name]
+        self.name=P 
         try:
             self.board.flags[self.name]
-
-            if(self.board.flags[self.name][0]!=self):
-                # raise IndexError Causes update loops to stop
-                print("WARNING MULTIPLE NAMES USED")
-                self.name=s
-                self.board.flags[self.name]=[self,0]
-
-                return False
-
         except KeyError:
             self.board.flags[self.name]=[self,0]
+            return True
 
-        return True
+        i=1
+        try:
+            while 1:
+                self.board.flags[self.name+"."+str(i)]
+                i+=1
+        except KeyError:
+
+            self.name=self.name+"."+str(i)
+            self.board.flags[self.name]=[self,0]
+
+        return False
+
+
 
 
     def clean_delete(self):
@@ -334,7 +347,6 @@ class Generator(Tile):
 
 
 
-
         self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="",outline="")
         self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="",outline="")
         self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="",outline="")
@@ -342,9 +354,10 @@ class Generator(Tile):
 
         self.gen_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#2e2e2e",outline="#EEEEEE") 
         self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="",outline="")
+        self.missing_key=self.board.canvas.create_text((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,text="?",fill="")
 
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
-        self.graphics=[self.on_box,self.gen_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
+        self.graphics=[self.on_box,self.gen_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.missing_key]
 
         self.name=""
 
@@ -373,9 +386,10 @@ class Generator(Tile):
                     and check.get()==1
                     and ind!=None):
                     self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
-
+            self.board.canvas.itemconfig(self.missing_key,fill="")
 
         except KeyError:
+            self.board.canvas.itemconfig(self.missing_key,fill="#FF0000")
             print('Generator has no input')
 
 class Switch(Tile):
@@ -489,6 +503,7 @@ class Counter(Tile):
         self.count_upto.pack()
         self.count_upto.insert(0,"1")
 
+        self.upto=1
         self.counter=0
         self.edge=0
 
@@ -508,14 +523,19 @@ class Counter(Tile):
         self.text_box=self.board.canvas.create_text((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,text="00+")
 
 
+
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
 
         self.graphics=[self.counter_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.text_box]
 
     def validate(self,P,s):
 
+        if(P==""):
+            self.upto=1
+            return True
+
         try:
-            int(P)
+            self.upto=int(P)
         except ValueError:
             return False
         print('value updated')
@@ -532,7 +552,7 @@ class Counter(Tile):
 
         self.board.canvas.itemconfig(self.text_box,text=str(self.counter)+"+")
 
-        if(self.counter>=int(self.count_upto.get())):
+        if(self.counter>=self.upto):
             self.board.canvas.itemconfig(self.text_box,fill="#00FF00")
         else:
             self.board.canvas.itemconfig(self.text_box,fill="#000000")
@@ -549,7 +569,7 @@ class Counter(Tile):
             self.edge=1
         elif(self.inputs[3]==1):
             
-            if(self.edge==1 and self.counter<int(self.count_upto.get())):
+            if(self.edge==1 and self.counter<self.upto):
                 self.counter+=1
             self.edge=0
 
@@ -560,7 +580,7 @@ class Counter(Tile):
     def output_update(self):
         print(self.counter)
 
-        if(self.counter>=int(self.count_upto.get())):
+        if(self.counter>=self.upto):
 
             if(self.auto_reset.get()==1):
                 self.counter=0

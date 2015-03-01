@@ -39,9 +39,11 @@ class ToolBox(tk.Frame):
 
         self.select=tk.Button(master=self,text="Select",command=lambda:self.change_tool("select"))
         self.horizontal=tk.Button(master=self,text="Horizontal",command=lambda:self.change_tool("horizontal"))
+        self.hswitch=tk.Button(master=self,text="HSwitch",command=lambda:self.change_tool("hswitch"))
 
         self.select.grid(row=0,column=0)
         self.horizontal.grid(row=0,column=1)
+        self.hswitch.grid(row=0,column=2)
 
 
     def change_tool(self,name):
