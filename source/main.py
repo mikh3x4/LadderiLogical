@@ -9,12 +9,13 @@ class LadderLogic:
         self.root=tk.Tk()
         self.root.title('LadderLogic')
 
-        self.io=IOBoard(self.root,self)
-        self.io.grid(column=2,row=1, sticky="nsew")
-
         self.board=TileBoard(self.root,self)
         self.board.grid(column=0,row=1, sticky="nsew")
 
+        self.io=IOBoard(self.root,self)
+        self.io.grid(column=2,row=1, sticky="nsew")
+
+        print("config done")
         self.tools=ToolBox(self.root,self)
         self.tools.grid(column=0,row=0, sticky="nsew")
 

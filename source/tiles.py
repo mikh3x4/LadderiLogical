@@ -274,7 +274,7 @@ class Flag(Tile):
 
         self.publish_name.delete(0,tk.END)
         self.publish_name.insert(0,self.name)
-        self.publish_name.config(validate="key")# BREAKS validation for unknow resons
+        self.publish_name.config(validate="key")
 
     def validate(self, P, s):
         del self.board.flags[self.name]
@@ -420,8 +420,6 @@ class Switch(Tile):
         self.subscribe_name.pack()
 
 
-
-
         self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="",outline="")
         self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="",outline="")
         self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="",outline="")
@@ -434,12 +432,13 @@ class Switch(Tile):
         self.on_box_rigth=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="",outline="")
         self.on_box_left=self.board.canvas.create_rectangle((self.x+0.6)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.2)*self.board.tile_size+1,(self.y+0.6)*self.board.tile_size,fill="",outline="")
 
+        self.missing_key=self.board.canvas.create_text((self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,text="?",fill="")
 
         self.on_conectors=[self.on_box_top,self.on_box_bottom,self.on_box_rigth,self.on_box_left]
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
 
 
-        self.graphics=[self.switch_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.on_box_top,self.on_box_bottom,self.on_box_rigth,self.on_box_left]
+        self.graphics=[self.missing_key,self.switch_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.on_box_top,self.on_box_bottom,self.on_box_rigth,self.on_box_left]
 
         self.name=""
         self.state=0
@@ -460,8 +459,9 @@ class Switch(Tile):
             else:
                 for box in self.on_conectors:
                     self.board.canvas.itemconfig(box,fill="")
+            self.board.canvas.itemconfig(self.missing_key,fill="")
         except KeyError:
-            pass
+            self.board.canvas.itemconfig(self.missing_key,fill="#FFFF00")
 
     def input_update(self):
         if(self.inputs[1]==1 or self.inputs[3]==1):
@@ -483,7 +483,7 @@ class Switch(Tile):
 
 
         except KeyError:
-            print('Switch has no input')
+            pass
 
 class Counter(Tile):
 

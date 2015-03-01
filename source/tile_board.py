@@ -9,7 +9,7 @@ class TileBoard(tk.Frame):
 
         self.total_size_x=self.total_size_y=1000
         self.size_x=self.size_y=400
-        self.tile_size=100
+        self.tile_size=50
 
         self.canvas = tk.Canvas(self, width=self.size_x, height=self.size_y, background="#7A7A7a")
         self.xsb = tk.Scrollbar(self, orient="horizontal", command=self.canvas.xview)
@@ -186,11 +186,11 @@ class TileBoard(tk.Frame):
         for tile in self.functionals:
             tile.inputs=[0,0,0,0]
 
-
         try:
             self.app.io.update()
         except AttributeError:
             print('initialy no board existant')
+
 
         self.after(100,self.update_all)
 
