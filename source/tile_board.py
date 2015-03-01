@@ -43,6 +43,15 @@ class TileBoard(tk.Frame):
         self.canvas.bind("<Control-B1-Motion>", self.scroll_move)
         # self.canvas.bind('<Motion>',self.motion)
 
+        #Manual Initial selection
+        self.sel_x=1
+        self.sel_y=0
+
+        self.canvas.create_rectangle(self.sel_x*self.tile_size,self.sel_y*self.tile_size,
+            self.sel_x*self.tile_size+self.tile_size,self.sel_y*self.tile_size+self.tile_size, tags="selection_box",outline="#0000FF")
+
+        self.tiles[self.sel_x][self.sel_y].frame.grid(column=1,row=1, sticky="nsew")
+
         self.reintegrate_tiles()
         self.update_all()
 
@@ -52,7 +61,6 @@ class TileBoard(tk.Frame):
 
         self.relays=[]
         self.functionals=[]
-
 
         for a in self.tiles:
             for b in a:
@@ -91,6 +99,7 @@ class TileBoard(tk.Frame):
         if(x==self.sel_x and y==self.sel_y):
             self.tiles[x][y].frame.grid(column=1,row=1, sticky="nsew")
 
+
     def click(self,event):
         self.shift_click(event)
 
@@ -107,6 +116,7 @@ class TileBoard(tk.Frame):
             self.horizontal(event)
         else:
             print('Unrecognised tool')
+
 
     def hswitch(self,event):
 
