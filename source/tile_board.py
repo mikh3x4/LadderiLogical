@@ -1,16 +1,16 @@
-from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter
+from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter,Pulsar
 import tkinter as tk
 
 class TileBoard(tk.Frame):
-    def __init__(self, root,app,tile_size=50,tile_number=(20,20)):
+    def __init__(self, root,app,tile_size=50):
         tk.Frame.__init__(self, root)
         self.root=root
         self.app=app
 
         self.size_x=self.size_y=400
         self.tile_size=tile_size
-        self.total_size_x=tile_number[0]*tile_size
-        self.total_size_y=tile_number[1]*tile_size
+        self.total_size_y=self.total_size_x=1000
+
 
         self.canvas = tk.Canvas(self, width=self.size_x, height=self.size_y, background="#7A7A7a")
         self.xsb = tk.Scrollbar(self, orient="horizontal", command=self.canvas.xview)
@@ -53,16 +53,39 @@ class TileBoard(tk.Frame):
 
         self.tiles[self.sel_x][self.sel_y].frame.grid(column=1,row=1, sticky="nsew")
 
+
+    def start(self):
         self.reintegrate_tiles()
         self.update_all()
+
+    def load_from_file(self,data):
+
+        self.canvas.configure(scrollregion=(0,0,data["tile_number"][0],data["tile_number"][1]))
+        self.total_size_x=data["tile_number"][0]
+        self.total_size_y=data["tile_number"][1]
+
+        # still no use as tile array non extendable
+
+        tile_decode={"relay":Relay,"source":Source,"flag":Flag,"generator":Generator,
+        "switch":Switch,"counter":Counter,"pulsar":Pulsar}
+        for x,col in enumerate(data['board']):
+            for y,info in enumerate(col):
+                if(info!="blk"):
+                    print(info)
+                    try:
+                        self.convert_tile(x,y,tile_decode[info["0type"]])
+                    except KeyError:
+                        print("new tile is unsuported")
+                    print(type(self.tiles[x][y]))
+                    self.tiles[x][y].open_from_file(info)
 
 
     def save_to_file(self):
 
         out={}
 
-        out["x_tiles"]=len(self.tiles)
-        out["y_tiles"]=len(self.tiles[0])
+        out["tile_number"]=[len(self.tiles),len(self.tiles[0])]
+
 
         columns=[]
         for a in self.tiles:
@@ -181,6 +204,7 @@ class TileBoard(tk.Frame):
         self.canvas.create_rectangle(self.sel_x*self.tile_size,self.sel_y*self.tile_size,
             self.sel_x*self.tile_size+self.tile_size,self.sel_y*self.tile_size+self.tile_size, tags="selection_box",outline="#0000FF")
 
+        print(self.tiles[self.sel_x][self.sel_y])
         self.tiles[self.sel_x][self.sel_y].frame.grid(column=1,row=1, sticky="nsew")
 
     def find_tile_coords(self,event):

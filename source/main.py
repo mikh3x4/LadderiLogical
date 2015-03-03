@@ -8,16 +8,32 @@ import json
 
 class LadderLogic:
 
-    def __init__(self):
+    def __init__(self,root=None,file_data=None):
 
-        self.root=tk.Tk()
+        # if(root==None):
+        #     self.root=tk.Tk()
+        # else:
+        self.root=tk.Toplevel()
         self.root.title('LadderLogic')
 
-        self.board=TileBoard(self.root,self)
+
+        if(file_data==None):
+            self.board=TileBoard(self.root,self)
+
+        else:
+            self.board=TileBoard(self.root,self,tile_size=file_data['settings']["tile_size"])
+
+
         self.board.grid(column=0,row=1, sticky="nsew")
+
 
         self.io=IOBoard(self.root,self)
         self.io.grid(column=2,row=1, sticky="nsew")
+
+        if(file_data!=None):
+            self.board.load_from_file(file_data['TileBoard'])
+
+        self.board.start()
 
         print("config done")
         self.tools=ToolBox(self.root,self)
@@ -29,7 +45,7 @@ class LadderLogic:
         self.root.grid_columnconfigure(1,weight=0)
         self.root.grid_columnconfigure(2,weight=0)
 
-        self.root.createcommand('::tk::mac::ShowPreferences', self.luanch_preferences)
+        # self.root.createcommand('::tk::mac::ShowPreferences', self.luanch_preferences)
 
         self.menubar = tk.Menu(self.root)
 
@@ -60,7 +76,26 @@ class LadderLogic:
         print("file_open")
         file_to_open=filedialog.askopenfilename(defaultextension='.lil',initialfile='')
         with open(file_to_open,mode="r") as f:
-            new_window=LadderLogic()
+            file_data=json.load(f)
+
+        #Cheak version by file_data["0header"]
+        LadderLogic(file_data=file_data)
+
+        # new_window.board.grid_forget()
+        # new_window.board=TileBoard(new_window.root,new_window,
+        #     tile_size=file_data['settings']["tile_size"])
+
+        # new_window.board.grid(column=0,row=1, sticky="nsew")
+
+        # self.board.load_from_file(file_data['TileBoard'])
+
+        # new_window.io.load_from_file(file_data['IOBoard'])
+
+        # new_window.board.start()
+
+
+         #test for extra features
+
 
 
     def file_save(self):
@@ -74,34 +109,6 @@ class LadderLogic:
 
         with open(self.filename,mode="w+") as f:
             json.dump(file_data,f, sort_keys=True)
-        #     f.write("<>"+'\n')# prevents editors from reading html
-        #     f.write("<header>"+'\n')
-        #     f.write("Uid:filetype"+'\n')
-        #     f.write("Sys:"+'\n')
-        #     f.write("POSIX:"+str(int(time()))+'\n')
-        #     f.write("Version:"+"1.0 Alpha"+'\n')
-
-        #     f.write("<header/>"+'\n')
-
-        #     f.write("<Settings>"+'\n')
-        #     f.write("<Settings/>"+'\n')
-
-        #     f.write("<TileBoard>"+'\n')
-        #     f.write("X:"+str(len(self.board.tiles))+'\n')
-        #     f.write("Y:"+str(len(self.board.tiles[0]))+'\n')
-
-        #     for column in self.board.tiles:
-        #         for tile in column:
-        #             f.write(tile.save_to_file()+"\n")
-
-        #         f.write("sep"+'\n')
-
-        #     f.write("<TileBoard/>"+'\n')
-
-        #     f.write("<IOBoard>"+'\n')
-        #     f.write(self.io.save_to_file()+'\n')
-
-        #     f.write("<IOBoard/>"+'\n')
 
     def file_saveas(self):
         self.filename=filedialog.asksaveasfilename(defaultextension='.lil',initialfile='')
@@ -118,7 +125,8 @@ class LadderLogic:
 
 if __name__ == "__main__":
 
-    l=LadderLogic()
+    root=tk.Tk()
+    l=LadderLogic(root=root)
 
 
     l.root.mainloop()

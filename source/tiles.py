@@ -48,6 +48,9 @@ class Tile:
 
     	return "blk"
 
+    def open_from_file(self,data):
+    	print("ERROR, blk not ment to be opened")
+
     def generate_shortcuts(self):
 
         self.adj_ind=[]
@@ -140,6 +143,15 @@ class Relay(Tile):
     	out={"0type":"relay"}
     	out['checks']=[x.get() for x in self.conector_checks]
     	return out
+
+    def open_from_file(self,data):
+    	assert(data['0type']=="relay")
+
+    	for check,inp in zip(self.conector_checks,data['checks']):
+    		print(inp)
+    		check.set(inp)
+
+    	#verify there is no extra fields
 
     def reintegrate(self):
 
@@ -238,6 +250,14 @@ class Source(Tile):
     	out['checks']=[x.get() for x in self.conector_checks]
     	return out
 
+    def open_from_file(self,data):
+    	assert(data['0type']=="source")
+
+    	for check,inp in zip(self.conector_checks,data['checks']):
+    		check.set(inp)
+
+    	#verify there is no extra fields
+
     def output_update(self):
 
         for ind,direction in zip(self.adj_ind,[2,3,0,1]):
@@ -291,6 +311,16 @@ class Flag(Tile):
     	out['checks']=[x.get() for x in self.conector_checks]
     	out['pubname']=self.name
     	return out
+
+    def open_from_file(self,data):
+    	assert(data['0type']=="flag")
+
+    	for check,inp in zip(self.conector_checks,data['checks']):
+    		check.set(inp)
+
+    	self.name=data['pubname']
+    	#verify there is no extra fields
+
 
     def invcmd(self):
 
@@ -388,9 +418,19 @@ class Generator(Tile):
     	out={"0type":"generator"}
     	out['checks']=[x.get() for x in self.conector_checks]
     	out['subname']=self.name
-    	out['invert']=[self.invert.get()]
+    	out['invert']=self.invert.get()
+    	print('created generator')
     	return out
 
+    def open_from_file(self,data):
+    	assert(data['0type']=="generator")
+
+    	for check,inp in zip(self.conector_checks,data['checks']):
+    		check.set(inp)
+
+    	self.name=data['subname']
+    	self.invert.set(data['invert'])
+    	#verify there is no extra fields
 
     def graphic_update(self):
 
@@ -421,7 +461,7 @@ class Generator(Tile):
 
         except KeyError:
             self.board.canvas.itemconfig(self.missing_key,fill="#FF0000")
-            print('Generator has no input')
+
 
 class Switch(Tile):
 
@@ -478,9 +518,18 @@ class Switch(Tile):
     	out={"0type":"switch"}
     	out['checks']=[x.get() for x in self.conector_checks]
     	out['subname']=self.name
-    	out['invert']=[self.invert.get()]
+    	out['invert']=self.invert.get()
     	return out
 
+    def open_from_file(self,data):
+    	assert(data['0type']=="switch")
+
+    	for check,inp in zip(self.conector_checks,data['checks']):
+    		check.set(inp)
+
+    	self.name=data['subname']
+    	self.invert.set(data['invert'])
+    	#verify there is no extra fields
 
     def graphic_update(self):
 
@@ -575,6 +624,13 @@ class Counter(Tile):
 
     	return out
 
+    def open_from_file(self,data):
+    	assert(data['0type']=="counter")
+    	self.upto=data['up_to']
+    	self.auto_reset.set(data['reset'])
+
+    	#verify there is no extra fields
+
 
 
 
@@ -628,7 +684,7 @@ class Counter(Tile):
 
 
     def output_update(self):
-        print(self.counter)
+
 
         if(self.counter>=self.upto):
 
@@ -692,6 +748,11 @@ class Pulsar(Tile):
     	out={"0type":"pulsar"}
     	out['time_to']=self.time_to
     	return out
+
+    def open_from_file(self,data):
+    	assert(data['0type']=="pulsar")
+    	self.time_to=data['time_to']
+    	#verify there is no extra fields
 
     def validate(self,P,s):
 

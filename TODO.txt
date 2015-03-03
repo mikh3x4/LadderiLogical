@@ -1,0 +1,9 @@
+
+
+-Decide on the Tk/Toplevel situation
+
+-Add [],{}"" to vaildating in Entryboxes
+
+-Make openiing files also uptade Entryboxes dislays
+
+-Fix the IOBOard file opener
