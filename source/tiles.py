@@ -44,6 +44,9 @@ class Tile:
         self.graphics=[]
 
         
+    def save_to_file(self):
+
+    	return "[blk]"
 
     def generate_shortcuts(self):
 
@@ -133,6 +136,17 @@ class Relay(Tile):
         self.graphics=[self.on_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.relay_box]
 
 
+    def save_to_file(self):
+    	out=["relay:"]
+    	out.append("[")
+    	for check in self.conector_checks:
+    		out.append(str(check.get()))
+    		out.append(',')
+    	out.pop(len(out)-1)
+    	out.append(']')
+    	return ''.join(out)
+
+
     def reintegrate(self):
 
         for ind, check, direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
@@ -198,9 +212,9 @@ class Relay(Tile):
 
         for check,ind,direction in zip(self.conector_checks,self.adj_ind,[2,3,0,1]):
 
-            if(self.board.relay_states[self.state_index]==1 and check.get()==1 
-                and type(self.board.tiles[ind[0]][ind[1]])!=Relay 
-                and ind!=None):
+            if(self.board.relay_states[self.state_index]==1 and check.get()==1
+            	and ind!=None
+                and type(self.board.tiles[ind[0]][ind[1]])!=Relay):
                 self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
 
 class Source(Tile):
