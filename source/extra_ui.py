@@ -48,22 +48,31 @@ class IOBoard(tk.Frame):
             self.input_list.append([a,c,name])
 
     def save_to_file(self):
-    	out=["outputs:["]
+        out={}
 
-    	for x in self.output_list:
-    		out.append(x[0].get())
-    		out.append(".")
-    	out.pop(len(out)-1)
-    	out.append("]\n")
+        out["inputs"]=[x[2] for x in self.input_list]
+        out["outputs"]=[x[0].get() for x in self.output_list]
 
-    	out.append("inputs:[")
-    	for x in self.input_list:
-    		out.append(x[2])
-    		out.append(".")
-    	out.pop(len(out)-1)
-    	out.append("]")
+        return out
 
-    	return "".join(out)
+
+    # def save_to_file(self):
+    #   out=["outputs:["]
+
+    #   for x in self.output_list:
+    #       out.append(x[0].get())
+    #       out.append(".")
+    #   out.pop(len(out)-1)
+    #   out.append("]\n")
+
+    #   out.append("inputs:[")
+    #   for x in self.input_list:
+    #       out.append(x[2])
+    #       out.append(".")
+    #   out.pop(len(out)-1)
+    #   out.append("]")
+
+    #   return "".join(out)
 
 
     def validate(self, P,n):

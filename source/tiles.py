@@ -137,15 +137,9 @@ class Relay(Tile):
 
 
     def save_to_file(self):
-    	out=["relay,check:"]
-    	out.append("[")
-    	for check in self.conector_checks:
-    		out.append(str(check.get()))
-    		out.append('.')
-    	out.pop(len(out)-1)
-    	out.append(']')
-    	return ''.join(out)
-
+    	out={"0type":"relay"}
+    	out['checks']=[x.get() for x in self.conector_checks]
+    	return out
 
     def reintegrate(self):
 
@@ -240,14 +234,9 @@ class Source(Tile):
         self.graphics=[self.on_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
 
     def save_to_file(self):
-    	out=["source,check:"]
-    	out.append("[")
-    	for check in self.conector_checks:
-    		out.append(str(check.get()))
-    		out.append('.')
-    	out.pop(len(out)-1)
-    	out.append(']')
-    	return ''.join(out)
+    	out={"0type":"source"}
+    	out['checks']=[x.get() for x in self.conector_checks]
+    	return out
 
     def output_update(self):
 
@@ -296,16 +285,12 @@ class Flag(Tile):
         self.publish_name.delete(0,tk.END)
         self.publish_name.insert(0,self.name)
 
-    def save_to_file(self):
-    	out=["flag,check:"]
-    	out.append("[")
-    	for check in self.conector_checks:
-    		out.append(str(check.get()))
-    		out.append('.')
-    	out.pop(len(out)-1)
-    	out.append('],pubname:'+self.name)
 
-    	return ''.join(out)
+    def save_to_file(self):
+    	out={"0type":"flag"}
+    	out['checks']=[x.get() for x in self.conector_checks]
+    	out['pubname']=self.name
+    	return out
 
     def invcmd(self):
 
@@ -398,16 +383,14 @@ class Generator(Tile):
 
         self.name=""
 
-    def save_to_file(self):
-    	out=["gen,check:"]
-    	out.append("[")
-    	for check in self.conector_checks:
-    		out.append(str(check.get()))
-    		out.append('.')
-    	out.pop(len(out)-1)
-    	out.append('],subname:'+self.name+',invert:'+str(self.invert.get()))
 
-    	return ''.join(out)
+    def save_to_file(self):
+    	out={"0type":"generator"}
+    	out['checks']=[x.get() for x in self.conector_checks]
+    	out['subname']=self.name
+    	out['invert']=[self.invert.get()]
+    	return out
+
 
     def graphic_update(self):
 
@@ -492,15 +475,12 @@ class Switch(Tile):
         self.state=0
 
     def save_to_file(self):
-    	out=["switch,check:"]
-    	out.append("[")
-    	for check in self.conector_checks:
-    		out.append(str(check.get()))
-    		out.append('.')
-    	out.pop(len(out)-1)
-    	out.append('],subname:'+self.name+',invert:'+str(self.invert.get()))
+    	out={"0type":"switch"}
+    	out['checks']=[x.get() for x in self.conector_checks]
+    	out['subname']=self.name
+    	out['invert']=[self.invert.get()]
+    	return out
 
-    	return ''.join(out)
 
     def graphic_update(self):
 
@@ -587,9 +567,15 @@ class Counter(Tile):
 
         self.graphics=[self.counter_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.text_box]
 
+
     def save_to_file(self):
-    	out=["counter,up_to:"+str(self.upto)]
-    	out.append(',reset:'+str(self.auto_reset.get()))
+    	out={"0type":"counter"}
+    	out['up_to']=self.upto
+    	out['reset']=self.auto_reset.get()
+
+    	return out
+
+
 
 
     def validate(self,P,s):
@@ -703,8 +689,9 @@ class Pulsar(Tile):
         self.graphics.extend(self.pulsar_lines)
 
     def save_to_file(self):
-    	out=["pulsar,time_to:"+str(self.time_to)]
-    	return ''.join(out)
+    	out={"0type":"pulsar"}
+    	out['time_to']=self.time_to
+    	return out
 
     def validate(self,P,s):
 

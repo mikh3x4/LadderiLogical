@@ -56,6 +56,25 @@ class TileBoard(tk.Frame):
         self.reintegrate_tiles()
         self.update_all()
 
+
+    def save_to_file(self):
+
+        out={}
+
+        out["x_tiles"]=len(self.tiles)
+        out["y_tiles"]=len(self.tiles[0])
+
+        columns=[]
+        for a in self.tiles:
+            rows=[]
+            for b in a:
+                rows.append(b.save_to_file())
+            columns.append(rows)
+
+        out['board']=columns
+
+        return out
+
     def reintegrate_tiles(self):
         self.relay_groups=[]
         self.relay_states=[]

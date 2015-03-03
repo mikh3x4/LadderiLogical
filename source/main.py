@@ -3,6 +3,8 @@ from extra_ui import IOBoard, ToolBox
 import tkinter as tk
 from tkinter import filedialog
 from time import time
+import json
+
 
 class LadderLogic:
 
@@ -62,35 +64,44 @@ class LadderLogic:
 
 
     def file_save(self):
+
+        file_data={}
+        file_data['0header']={"sys":"osx","POSIX":str(int(time())),"version":"1.0 Alpha"}
+        file_data['settings']={"tile_size":self.board.tile_size}
+        file_data['TileBoard']=self.board.save_to_file()
+        file_data['IOBoard']=self.io.save_to_file()
+
+
         with open(self.filename,mode="w+") as f:
-            f.write("<>"+'\n')# prevents editors from reading html
-            f.write("<header>"+'\n')
-            f.write("Uid:filetype"+'\n')
-            f.write("Sys:"+'\n')
-            f.write("POSIX:"+str(int(time()))+'\n')
-            f.write("Version:"+"1.0 Alpha"+'\n')
+            json.dump(file_data,f, sort_keys=True)
+        #     f.write("<>"+'\n')# prevents editors from reading html
+        #     f.write("<header>"+'\n')
+        #     f.write("Uid:filetype"+'\n')
+        #     f.write("Sys:"+'\n')
+        #     f.write("POSIX:"+str(int(time()))+'\n')
+        #     f.write("Version:"+"1.0 Alpha"+'\n')
 
-            f.write("<header/>"+'\n')
+        #     f.write("<header/>"+'\n')
 
-            f.write("<Settings>"+'\n')
-            f.write("<Settings/>"+'\n')
+        #     f.write("<Settings>"+'\n')
+        #     f.write("<Settings/>"+'\n')
 
-            f.write("<TileBoard>"+'\n')
-            f.write("X:"+str(len(self.board.tiles))+'\n')
-            f.write("Y:"+str(len(self.board.tiles[0]))+'\n')
+        #     f.write("<TileBoard>"+'\n')
+        #     f.write("X:"+str(len(self.board.tiles))+'\n')
+        #     f.write("Y:"+str(len(self.board.tiles[0]))+'\n')
 
-            for column in self.board.tiles:
-                for tile in column:
-                    f.write(tile.save_to_file()+"\n")
+        #     for column in self.board.tiles:
+        #         for tile in column:
+        #             f.write(tile.save_to_file()+"\n")
 
-                f.write("sep"+'\n')
+        #         f.write("sep"+'\n')
 
-            f.write("<TileBoard/>"+'\n')
+        #     f.write("<TileBoard/>"+'\n')
 
-            f.write("<IOBoard>"+'\n')
-            f.write(self.io.save_to_file()+'\n')
+        #     f.write("<IOBoard>"+'\n')
+        #     f.write(self.io.save_to_file()+'\n')
 
-            f.write("<IOBoard/>"+'\n')
+        #     f.write("<IOBoard/>"+'\n')
 
     def file_saveas(self):
         self.filename=filedialog.asksaveasfilename(defaultextension='.lil',initialfile='')
