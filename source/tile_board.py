@@ -2,14 +2,15 @@ from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter
 import tkinter as tk
 
 class TileBoard(tk.Frame):
-    def __init__(self, root,app):
+    def __init__(self, root,app,tile_size=50,tile_number=(20,20)):
         tk.Frame.__init__(self, root)
         self.root=root
         self.app=app
 
-        self.total_size_x=self.total_size_y=1000
         self.size_x=self.size_y=400
-        self.tile_size=50
+        self.tile_size=tile_size
+        self.total_size_x=tile_number[0]*tile_size
+        self.total_size_y=tile_number[1]*tile_size
 
         self.canvas = tk.Canvas(self, width=self.size_x, height=self.size_y, background="#7A7A7a")
         self.xsb = tk.Scrollbar(self, orient="horizontal", command=self.canvas.xview)

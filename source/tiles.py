@@ -46,7 +46,7 @@ class Tile:
         
     def save_to_file(self):
 
-    	return "[blk]"
+    	return "blk"
 
     def generate_shortcuts(self):
 
@@ -137,11 +137,11 @@ class Relay(Tile):
 
 
     def save_to_file(self):
-    	out=["relay:"]
+    	out=["relay,check:"]
     	out.append("[")
     	for check in self.conector_checks:
     		out.append(str(check.get()))
-    		out.append(',')
+    		out.append('.')
     	out.pop(len(out)-1)
     	out.append(']')
     	return ''.join(out)
@@ -239,6 +239,16 @@ class Source(Tile):
 
         self.graphics=[self.on_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
 
+    def save_to_file(self):
+    	out=["source,check:"]
+    	out.append("[")
+    	for check in self.conector_checks:
+    		out.append(str(check.get()))
+    		out.append('.')
+    	out.pop(len(out)-1)
+    	out.append(']')
+    	return ''.join(out)
+
     def output_update(self):
 
         for ind,direction in zip(self.adj_ind,[2,3,0,1]):
@@ -286,7 +296,16 @@ class Flag(Tile):
         self.publish_name.delete(0,tk.END)
         self.publish_name.insert(0,self.name)
 
+    def save_to_file(self):
+    	out=["flag,check:"]
+    	out.append("[")
+    	for check in self.conector_checks:
+    		out.append(str(check.get()))
+    		out.append('.')
+    	out.pop(len(out)-1)
+    	out.append('],pubname:'+self.name)
 
+    	return ''.join(out)
 
     def invcmd(self):
 
@@ -379,6 +398,17 @@ class Generator(Tile):
 
         self.name=""
 
+    def save_to_file(self):
+    	out=["gen,check:"]
+    	out.append("[")
+    	for check in self.conector_checks:
+    		out.append(str(check.get()))
+    		out.append('.')
+    	out.pop(len(out)-1)
+    	out.append('],subname:'+self.name+',invert:'+str(self.invert.get()))
+
+    	return ''.join(out)
+
     def graphic_update(self):
 
         for check, box in zip(self.conector_checks,self.graphic_conectors):
@@ -460,6 +490,17 @@ class Switch(Tile):
 
         self.name=""
         self.state=0
+
+    def save_to_file(self):
+    	out=["switch,check:"]
+    	out.append("[")
+    	for check in self.conector_checks:
+    		out.append(str(check.get()))
+    		out.append('.')
+    	out.pop(len(out)-1)
+    	out.append('],subname:'+self.name+',invert:'+str(self.invert.get()))
+
+    	return ''.join(out)
 
     def graphic_update(self):
 
@@ -545,6 +586,11 @@ class Counter(Tile):
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
 
         self.graphics=[self.counter_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.text_box]
+
+    def save_to_file(self):
+    	out=["counter,up_to:"+str(self.upto)]
+    	out.append(',reset:'+str(self.auto_reset.get()))
+
 
     def validate(self,P,s):
 
@@ -656,6 +702,9 @@ class Pulsar(Tile):
         self.graphics=[self.pulsar_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
         self.graphics.extend(self.pulsar_lines)
 
+    def save_to_file(self):
+    	out=["pulsar,time_to:"+str(self.time_to)]
+    	return ''.join(out)
 
     def validate(self,P,s):
 
@@ -678,22 +727,13 @@ class Pulsar(Tile):
             else:
                 self.board.canvas.itemconfig(box,fill="")
 
-
-
     def input_update(self):
-
-
-
         if(self.inputs[3]==1):
             self.state=1
         else:
             self.state=0
             
-
-
     def output_update(self):
-
-        
 
         if(1000*(time()-self.time)>int(self.time_to)):
 

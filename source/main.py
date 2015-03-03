@@ -33,12 +33,14 @@ class LadderLogic:
 
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
 
-        self.filemenu.add_command(label="New", command=self.file_new)
-        self.filemenu.add_command(label="Open", command=self.file_open)
-        self.filemenu.add_command(label="Save", command=self.file_save)
-        self.filemenu.add_command(label="Save As...", command=self.file_saveas)
+        self.filemenu.add_command(label="New", command=self.file_new, accelerator="Command+N")
+        self.filemenu.add_command(label="Open", command=self.file_open, accelerator="Command+O")
+        self.filemenu.add_command(label="Save", command=self.file_save, accelerator="Command+S")
+
+        self.filemenu.entryconfigure(2, state=tk.DISABLED)
+        self.filemenu.add_command(label="Save As...", command=self.file_saveas, accelerator="Shift-Command+S")
         self.filemenu.add_separator()
-        self.filemenu.add_command(label="Exit", command=self.root.quit)
+        self.filemenu.add_command(label="Exit", command=self.root.quit, accelerator="Command+Q")
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
         self.root.config(menu=self.menubar)
@@ -54,15 +56,13 @@ class LadderLogic:
 
     def file_open(self):
         print("file_open")
+        file_to_open=filedialog.askopenfilename(defaultextension='.lil',initialfile='')
+        with open(file_to_open,mode="r") as f:
+            new_window=LadderLogic()
+
 
     def file_save(self):
-        print("file_save")
-
-    def file_saveas(self):
-        self.filename=filedialog.asksaveasfilename(defaultextension='.lil',initialfile='')
-
         with open(self.filename,mode="w+") as f:
-            pass
             f.write("<>"+'\n')# prevents editors from reading html
             f.write("<header>"+'\n')
             f.write("Uid:filetype"+'\n')
@@ -71,6 +71,9 @@ class LadderLogic:
             f.write("Version:"+"1.0 Alpha"+'\n')
 
             f.write("<header/>"+'\n')
+
+            f.write("<Settings>"+'\n')
+            f.write("<Settings/>"+'\n')
 
             f.write("<TileBoard>"+'\n')
             f.write("X:"+str(len(self.board.tiles))+'\n')
@@ -85,11 +88,15 @@ class LadderLogic:
             f.write("<TileBoard/>"+'\n')
 
             f.write("<IOBoard>"+'\n')
+            f.write(self.io.save_to_file()+'\n')
+
             f.write("<IOBoard/>"+'\n')
 
-            f.write("<Settings>"+'\n')
-            f.write("<Settings/>"+'\n')
+    def file_saveas(self):
+        self.filename=filedialog.asksaveasfilename(defaultextension='.lil',initialfile='')
+        self.filemenu.entryconfigure(2, state=tk.NORMAL)
 
+        self.file_save()
 
 
 

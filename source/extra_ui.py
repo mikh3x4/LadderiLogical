@@ -47,6 +47,24 @@ class IOBoard(tk.Frame):
             a.config(validate="key")
             self.input_list.append([a,c,name])
 
+    def save_to_file(self):
+    	out=["outputs:["]
+
+    	for x in self.output_list:
+    		out.append(x[0].get())
+    		out.append(".")
+    	out.pop(len(out)-1)
+    	out.append("]\n")
+
+    	out.append("inputs:[")
+    	for x in self.input_list:
+    		out.append(x[2])
+    		out.append(".")
+    	out.pop(len(out)-1)
+    	out.append("]")
+
+    	return "".join(out)
+
 
     def validate(self, P,n):
         print("validated",n)
@@ -84,7 +102,7 @@ class IOBoard(tk.Frame):
 
         for x in self.input_list:
             # print(x[2])
-            self.app.board.flags[x[2]]=[None,x[1].get()]
+            self.app.board.flags[x[2]][1]=x[1].get()
 
 
 
