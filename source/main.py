@@ -8,30 +8,25 @@ import json
 
 class LadderLogic:
 
-    def __init__(self,root=None,file_data=None):
+    def __init__(self,file_data=None):
 
-        # if(root==None):
-        #     self.root=tk.Tk()
-        # else:
+
         self.root=tk.Toplevel()
         self.root.title('LadderLogic')
 
 
         if(file_data==None):
             self.board=TileBoard(self.root,self)
-
         else:
             self.board=TileBoard(self.root,self,tile_size=file_data['settings']["tile_size"])
-
-
         self.board.grid(column=0,row=1, sticky="nsew")
-
 
         self.io=IOBoard(self.root,self)
         self.io.grid(column=2,row=1, sticky="nsew")
 
         if(file_data!=None):
             self.board.load_from_file(file_data['TileBoard'])
+            self.io.load_from_file(file_data['IOBoard'])
 
         self.board.start()
 
@@ -62,6 +57,12 @@ class LadderLogic:
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
         self.root.config(menu=self.menubar)
+
+        self.root.bind("<Command-n>", lambda x:self.file_new())
+        self.root.bind("<Command-o>", lambda x:self.file_open())
+        self.root.bind("<Command-s>", lambda x:self.file_save())
+        self.root.bind("<Command-Shift-s>", lambda x:self.file_saveas())
+        self.root.bind("<Command-w>", lambda x:self.root.destroy())
 
         self.filename=""
 
@@ -125,8 +126,7 @@ class LadderLogic:
 
 if __name__ == "__main__":
 
-    root=tk.Tk()
-    l=LadderLogic(root=root)
-
-
-    l.root.mainloop()
+    main_root=tk.Tk()
+    LadderLogic()
+    main_root.withdraw()
+    main_root.mainloop()

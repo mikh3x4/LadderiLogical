@@ -53,6 +53,8 @@ class IOBoard(tk.Frame):
         out["inputs"]=[x[2] for x in self.input_list]
         out["outputs"]=[x[0].get() for x in self.output_list]
 
+
+
         return out
 
 
@@ -62,12 +64,17 @@ class IOBoard(tk.Frame):
         assert(len(data["outputs"])==8)
 
         for i in range(8):
-            self.input_list[i][2]=["inputs"][i]
+            self.input_list[i][2]=data["inputs"][i]
+            self.input_list[i][0].config(validate="none")
+            self.input_list[i][0].delete(0,tk.END)
+            self.input_list[i][0].insert(0,data["inputs"][i])
+            self.input_list[i][0].config(validate="key")
+            self.app.board.flags[self.input_list[i][2]]=[None,0]
 
         for i in range(8):
-            self.output_list[i][0].set(["outputs"][i])
-
-        #test for extra features
+            self.output_list[i][0].config(validate="none")
+            self.output_list[i][0].delete(0,tk.END)
+            self.output_list[i][0].insert(0,data["outputs"][i])
 
     def validate(self, P,n):
         print("validated",n)

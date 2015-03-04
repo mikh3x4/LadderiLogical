@@ -1,6 +1,8 @@
 
 
--Decide on the Tk/Toplevel situation
+-Add protection to actions that may cause loss of data
+
+-Add quto quit if all windows closed
 
 -Add [],{}"" to vaildating in Entryboxes
 

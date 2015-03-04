@@ -46,10 +46,10 @@ class Tile:
         
     def save_to_file(self):
 
-    	return "blk"
+        return "blk"
 
     def open_from_file(self,data):
-    	print("ERROR, blk not ment to be opened")
+        print("ERROR, blk not ment to be opened")
 
     def generate_shortcuts(self):
 
@@ -140,18 +140,18 @@ class Relay(Tile):
 
 
     def save_to_file(self):
-    	out={"0type":"relay"}
-    	out['checks']=[x.get() for x in self.conector_checks]
-    	return out
+        out={"0type":"relay"}
+        out['checks']=[x.get() for x in self.conector_checks]
+        return out
 
     def open_from_file(self,data):
-    	assert(data['0type']=="relay")
+        assert(data['0type']=="relay")
 
-    	for check,inp in zip(self.conector_checks,data['checks']):
-    		print(inp)
-    		check.set(inp)
+        for check,inp in zip(self.conector_checks,data['checks']):
+            print(inp)
+            check.set(inp)
 
-    	#verify there is no extra fields
+        #verify there is no extra fields
 
     def reintegrate(self):
 
@@ -219,7 +219,7 @@ class Relay(Tile):
         for check,ind,direction in zip(self.conector_checks,self.adj_ind,[2,3,0,1]):
 
             if(self.board.relay_states[self.state_index]==1 and check.get()==1
-            	and ind!=None
+                and ind!=None
                 and type(self.board.tiles[ind[0]][ind[1]])!=Relay):
                 self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
 
@@ -246,17 +246,17 @@ class Source(Tile):
         self.graphics=[self.on_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
 
     def save_to_file(self):
-    	out={"0type":"source"}
-    	out['checks']=[x.get() for x in self.conector_checks]
-    	return out
+        out={"0type":"source"}
+        out['checks']=[x.get() for x in self.conector_checks]
+        return out
 
     def open_from_file(self,data):
-    	assert(data['0type']=="source")
+        assert(data['0type']=="source")
 
-    	for check,inp in zip(self.conector_checks,data['checks']):
-    		check.set(inp)
+        for check,inp in zip(self.conector_checks,data['checks']):
+            check.set(inp)
 
-    	#verify there is no extra fields
+        #verify there is no extra fields
 
     def output_update(self):
 
@@ -307,19 +307,26 @@ class Flag(Tile):
 
 
     def save_to_file(self):
-    	out={"0type":"flag"}
-    	out['checks']=[x.get() for x in self.conector_checks]
-    	out['pubname']=self.name
-    	return out
+        out={"0type":"flag"}
+        out['checks']=[x.get() for x in self.conector_checks]
+        out['pubname']=self.name
+
+        return out
 
     def open_from_file(self,data):
-    	assert(data['0type']=="flag")
+        assert(data['0type']=="flag")
 
-    	for check,inp in zip(self.conector_checks,data['checks']):
-    		check.set(inp)
+        for check,inp in zip(self.conector_checks,data['checks']):
+            check.set(inp)
 
-    	self.name=data['pubname']
-    	#verify there is no extra fields
+        self.name=data['pubname']
+        self.publish_name.config(validate="none")
+        self.publish_name.delete(0,tk.END)
+        self.publish_name.insert(0,self.name)
+        self.publish_name.config(validate="key")
+
+        self.board.flags[self.name]=[self,0]
+        #verify there is no extra fields
 
 
     def invcmd(self):
@@ -411,26 +418,30 @@ class Generator(Tile):
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
         self.graphics=[self.on_box,self.gen_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.missing_key]
 
-        self.name=""
 
 
     def save_to_file(self):
-    	out={"0type":"generator"}
-    	out['checks']=[x.get() for x in self.conector_checks]
-    	out['subname']=self.name
-    	out['invert']=self.invert.get()
-    	print('created generator')
-    	return out
+        out={"0type":"generator"}
+        out['checks']=[x.get() for x in self.conector_checks]
+        out['subname']=self.subscribe_name.get()
+        out['invert']=self.invert.get()
+
+        print('created generator')
+        return out
 
     def open_from_file(self,data):
-    	assert(data['0type']=="generator")
+        assert(data['0type']=="generator")
 
-    	for check,inp in zip(self.conector_checks,data['checks']):
-    		check.set(inp)
+        for check,inp in zip(self.conector_checks,data['checks']):
+            check.set(inp)
 
-    	self.name=data['subname']
-    	self.invert.set(data['invert'])
-    	#verify there is no extra fields
+        self.invert.set(data['invert'])
+        # self.subscribe_name.config(validate="none")
+        self.subscribe_name.delete(0,tk.END)
+        self.subscribe_name.insert(0,data['subname'])
+        # self.subscribe_name.config(validate="key")
+
+        #verify there is no extra fields
 
     def graphic_update(self):
 
@@ -511,25 +522,31 @@ class Switch(Tile):
 
         self.graphics=[self.missing_key,self.switch_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.on_box_top,self.on_box_bottom,self.on_box_rigth,self.on_box_left]
 
-        self.name=""
+
         self.state=0
 
     def save_to_file(self):
-    	out={"0type":"switch"}
-    	out['checks']=[x.get() for x in self.conector_checks]
-    	out['subname']=self.name
-    	out['invert']=self.invert.get()
-    	return out
+        out={"0type":"switch"}
+        out['checks']=[x.get() for x in self.conector_checks]
+        out['subname']=self.subscribe_name.get()
+        out['invert']=self.invert.get()
+
+        return out
 
     def open_from_file(self,data):
-    	assert(data['0type']=="switch")
+        assert(data['0type']=="switch")
 
-    	for check,inp in zip(self.conector_checks,data['checks']):
-    		check.set(inp)
+        for check,inp in zip(self.conector_checks,data['checks']):
+            check.set(inp)
 
-    	self.name=data['subname']
-    	self.invert.set(data['invert'])
-    	#verify there is no extra fields
+        self.invert.set(data['invert'])
+
+        # self.subscribe_name.config(validate="none")
+        self.subscribe_name.delete(0,tk.END)
+        self.subscribe_name.insert(0,data['subname'])
+        # self.subscribe_name.config(validate="key")
+
+        #verify there is no extra fields
 
     def graphic_update(self):
 
@@ -618,18 +635,24 @@ class Counter(Tile):
 
 
     def save_to_file(self):
-    	out={"0type":"counter"}
-    	out['up_to']=self.upto
-    	out['reset']=self.auto_reset.get()
+        out={"0type":"counter"}
+        out['up_to']=self.upto
+        out['reset']=self.auto_reset.get()
 
-    	return out
+
+        return out
 
     def open_from_file(self,data):
-    	assert(data['0type']=="counter")
-    	self.upto=data['up_to']
-    	self.auto_reset.set(data['reset'])
+        assert(data['0type']=="counter")
+        self.upto=data['up_to']
+        self.auto_reset.set(data['reset'])
 
-    	#verify there is no extra fields
+        # self.count_upto.config(validate="none")
+        self.count_upto.delete(0,tk.END)
+        self.count_upto.insert(0,str(self.upto))
+        # self.count_upto.config(validate="key")
+
+        #verify there is no extra fields
 
 
 
@@ -745,14 +768,20 @@ class Pulsar(Tile):
         self.graphics.extend(self.pulsar_lines)
 
     def save_to_file(self):
-    	out={"0type":"pulsar"}
-    	out['time_to']=self.time_to
-    	return out
+        out={"0type":"pulsar"}
+        out['time_to']=self.time_to
+
+        return out
 
     def open_from_file(self,data):
-    	assert(data['0type']=="pulsar")
-    	self.time_to=data['time_to']
-    	#verify there is no extra fields
+        assert(data['0type']=="pulsar")
+        self.time_to=data['time_to']
+        # self.time_in.config(validate="none")
+        self.time_in.delete(0,tk.END)
+        self.time_in.insert(0,str(self.time_to))
+        # self.time_in.config(validate="key")
+
+        #verify there is no extra fields
 
     def validate(self,P,s):
 
