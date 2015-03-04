@@ -2,10 +2,10 @@
 
 -Add protection to actions that may cause loss of data
 
--Add quto quit if all windows closed
-
 -Add [],{}"" to vaildating in Entryboxes
 
--Make openiing files also uptade Entryboxes dislays
+-Write asm compiler
 
--Fix the IOBOard file opener
+-Add timers
+
+-Improve graphics

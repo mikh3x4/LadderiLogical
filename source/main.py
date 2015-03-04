@@ -8,9 +8,11 @@ import json
 
 class LadderLogic:
 
-    def __init__(self,file_data=None):
+    def __init__(self,main_root,windows,file_data=None,file_name=""):
+        self.main_root=main_root
 
-
+        self.window_list=windows
+        self.window_list.append(self)
         self.root=tk.Toplevel()
         self.root.title('LadderLogic')
 
@@ -62,44 +64,44 @@ class LadderLogic:
         self.root.bind("<Command-o>", lambda x:self.file_open())
         self.root.bind("<Command-s>", lambda x:self.file_save())
         self.root.bind("<Command-Shift-s>", lambda x:self.file_saveas())
-        self.root.bind("<Command-w>", lambda x:self.root.destroy())
+        self.root.bind("<Command-w>", self.close_window)
 
-        self.filename=""
+        self.filename=file_name
+
+        if(self.filename!=""):
+            self.filemenu.entryconfigure(2, state=tk.NORMAL)
+
+        print(self.window_list)
+
+    def close_window(self,event):
+        i=self.window_list.index(self)
+        self.window_list.pop(i)
+
+        if(len(self.window_list)==0):
+            print('quiting')
+            self.main_root.quit()
+        else:
+            self.root.destroy()
 
     def file_new(self):
         #Generate warnings etc?
         #NEED EXTENSIVE TESTING
-        LadderLogic()
+        LadderLogic(self.main_root,self.window_list)
 
         print("file_new")
 
     def file_open(self):
         print("file_open")
         file_to_open=filedialog.askopenfilename(defaultextension='.lil',initialfile='')
+
         with open(file_to_open,mode="r") as f:
             file_data=json.load(f)
 
-        #Cheak version by file_data["0header"]
-        LadderLogic(file_data=file_data)
-
-        # new_window.board.grid_forget()
-        # new_window.board=TileBoard(new_window.root,new_window,
-        #     tile_size=file_data['settings']["tile_size"])
-
-        # new_window.board.grid(column=0,row=1, sticky="nsew")
-
-        # self.board.load_from_file(file_data['TileBoard'])
-
-        # new_window.io.load_from_file(file_data['IOBoard'])
-
-        # new_window.board.start()
-
-
-         #test for extra features
+        LadderLogic(self.main_root,self.window_list,file_data=file_data,file_name=file_to_open)
 
 
 
-    def file_save(self):
+    def file_save(self,file_to_save=None):
 
         file_data={}
         file_data['0header']={"sys":"osx","POSIX":str(int(time())),"version":"1.0 Alpha"}
@@ -107,17 +109,20 @@ class LadderLogic:
         file_data['TileBoard']=self.board.save_to_file()
         file_data['IOBoard']=self.io.save_to_file()
 
+        if(file_to_save==None):
+            file_to_save=self.filename
 
-        with open(self.filename,mode="w+") as f:
+        with open(file_to_save,mode="w+") as f:
             json.dump(file_data,f, sort_keys=True)
 
     def file_saveas(self):
-        self.filename=filedialog.asksaveasfilename(defaultextension='.lil',initialfile='')
+        
+        file_to_save=filedialog.asksaveasfilename(defaultextension='.lil',initialfile='')
+
+        self.file_save(file_to_save=file_to_save)
         self.filemenu.entryconfigure(2, state=tk.NORMAL)
 
-        self.file_save()
-
-
+        self.filename=file_to_save
 
     def luanch_preferences(self,event=None):
         print("luanch_preferences")
@@ -127,6 +132,7 @@ class LadderLogic:
 if __name__ == "__main__":
 
     main_root=tk.Tk()
-    LadderLogic()
+    window_list=[]
+    LadderLogic(main_root,window_list)
     main_root.withdraw()
     main_root.mainloop()
