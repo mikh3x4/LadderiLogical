@@ -13,7 +13,7 @@ DATA_FILES = []
 OPTIONS = {'argv_emulation': False,
     'iconfile':'resources/app_icon.icns',
     'plist': {'CFBundleName': 'LadderiLogical',
-    'NSHumanReadableCopyrigh':'Copyright © 2015 Michal Adamkiewicz',
+    'NSHumanReadableCopyright':'Copyright © 2015 Michal Adamkiewicz',
     "CFBundleTypeExtensions":["lil"]}
 }
 setup(
