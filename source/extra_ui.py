@@ -2,7 +2,7 @@ import tkinter as tk
 
 class IOBoard(tk.Frame):
 
-
+    forbiden_chars=["'",'"',"[","]","{","}",","]
     def __init__(self,root,app):
         tk.Frame.__init__(self, root)
         self.root=root
@@ -15,8 +15,10 @@ class IOBoard(tk.Frame):
         tk.Label(master=self,text="Outputs").grid(column=1,row=0)
         tk.Label(master=self,text="Inputs").grid(column=2,row=0)
 
+        v2cmd = (self.root.register(self.validate_2),'%S','%d')
+
         for x in range(8):
-            a=tk.Entry(master=self,width=10)
+            a=tk.Entry(master=self,width=10,validate="key",validatecommand=v2cmd)
             a.grid(column=1,row=x+1)
             a.insert(0,'1')
             b=tk.Label(master=self,text='0')
@@ -25,11 +27,10 @@ class IOBoard(tk.Frame):
 
         for x in range(8):
 
-            vcmd = (self.root.register(self.validate), '%P',x)
+            vcmd = (self.root.register(self.validate), '%P','%S','%d',x)
 
             def temp(r):
                 def invcmd():
-                    print("::",r)
                     self.input_list[r][0].delete(0,tk.END)
                     self.input_list[r][0].insert(0,self.input_list[r][2])
                     self.input_list[r][0].config(validate="key")
@@ -52,9 +53,6 @@ class IOBoard(tk.Frame):
 
         out["inputs"]=[x[2] for x in self.input_list]
         out["outputs"]=[x[0].get() for x in self.output_list]
-
-
-
         return out
 
 
@@ -76,8 +74,17 @@ class IOBoard(tk.Frame):
             self.output_list[i][0].delete(0,tk.END)
             self.output_list[i][0].insert(0,data["outputs"][i])
 
-    def validate(self, P,n):
-        print("validated",n)
+    def validate_2(self,S,d):
+
+        if(d=="1" and S in self.forbiden_chars):
+            return False
+        return True
+
+
+    def validate(self, P,S,d,n):
+
+        if(d=="1" and S in self.forbiden_chars):
+            return False
 
         n=int(n)
         del self.app.board.flags[self.input_list[n][2]]
@@ -87,7 +94,7 @@ class IOBoard(tk.Frame):
         except KeyError:
             self.app.board.flags[self.input_list[n][2]]=[None,0]
             return True
-        print('modding')
+
         i=1
         try:
             while 1:
@@ -96,7 +103,7 @@ class IOBoard(tk.Frame):
         except KeyError:
             self.input_list[n][2]=self.input_list[n][2]+"."+str(i)
             self.app.board.flags[self.input_list[n][2]]=[None,0]
-        print(self.input_list[n][2])
+
 
         return False
 
@@ -111,7 +118,6 @@ class IOBoard(tk.Frame):
                 x[1].config(text="?")
 
         for x in self.input_list:
-            # print(x[2])
             self.app.board.flags[x[2]][1]=x[1].get()
 
 

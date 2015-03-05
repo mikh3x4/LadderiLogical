@@ -3,6 +3,8 @@ from time import time
 
 class Tile:
 
+    forbiden_chars=["'",'"',"[","]","{","}",","]
+
     def __init__(self,root,board,x,y):
         self.x=x
         self.y=y
@@ -271,7 +273,7 @@ class Flag(Tile):
 
         super().__init__(*args)
 
-        vcmd = (self.root.register(self.validate), '%P', '%s')
+        vcmd = (self.root.register(self.validate), '%P', '%s','%S','%d')
 
         for x in self.conector_checks:
             x.set(1)
@@ -335,7 +337,11 @@ class Flag(Tile):
         self.publish_name.insert(0,self.name)
         self.publish_name.config(validate="key")
 
-    def validate(self, P, s):
+    def validate(self, P, s,S,d):
+
+        if(d=="1" and S in self.forbiden_chars):
+            return False
+
         del self.board.flags[self.name]
         self.name=P 
         try:
@@ -401,7 +407,9 @@ class Generator(Tile):
         self.invert.set(1)
         self.invert_cheack.pack()
 
-        self.subscribe_name=tk.Entry(master=self.frame,width=10)
+        vcmd = (self.root.register(self.validate), '%S','%d')
+
+        self.subscribe_name=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
         self.subscribe_name.pack()
 
 
@@ -418,6 +426,11 @@ class Generator(Tile):
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
         self.graphics=[self.on_box,self.gen_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.missing_key]
 
+
+    def validate(self,S,d):
+        if(d=="1" and S in self.forbiden_chars):
+            return False
+        return True
 
 
     def save_to_file(self):
@@ -473,7 +486,6 @@ class Generator(Tile):
         except KeyError:
             self.board.canvas.itemconfig(self.missing_key,fill="#FF0000")
 
-
 class Switch(Tile):
 
     def __init__(self, *args):
@@ -498,7 +510,12 @@ class Switch(Tile):
         self.invert.set(1)
         self.invert_cheack.pack()
 
-        self.subscribe_name=tk.Entry(master=self.frame,width=10)
+
+
+        vcmd = (self.root.register(self.validate), '%S','%d')
+
+        self.subscribe_name=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
+
         self.subscribe_name.pack()
 
 
@@ -524,6 +541,11 @@ class Switch(Tile):
 
 
         self.state=0
+
+    def validate(self,S,d):
+        if(d=="1" and S in self.forbiden_chars):
+            return False
+        return True
 
     def save_to_file(self):
         out={"0type":"switch"}
@@ -602,7 +624,7 @@ class Counter(Tile):
         self.conector_checks[2].set(1)
         self.conector_checks[3].set(1)
 
-        vcmd = (self.root.register(self.validate), '%P', '%s')
+        vcmd = (self.root.register(self.validate), '%P', '%s','%S', '%d')
 
         self.count_upto=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
         self.count_upto.pack()
@@ -657,7 +679,10 @@ class Counter(Tile):
 
 
 
-    def validate(self,P,s):
+    def validate(self,P,s,S,d):
+
+        if(d=="1" and S in self.forbiden_chars):
+            return False
 
         if(P==""):
             self.upto=1
@@ -729,7 +754,7 @@ class Pulsar(Tile):
         self.conector_checks[2].set(0)
         self.conector_checks[3].set(1)
 
-        vcmd = (self.root.register(self.validate), '%P', '%s')
+        vcmd = (self.root.register(self.validate), '%P', '%s','%S', '%d')
 
         self.time_in=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
         self.time_in.pack()
@@ -783,7 +808,11 @@ class Pulsar(Tile):
 
         #verify there is no extra fields
 
-    def validate(self,P,s):
+    def validate(self,P,s,S,d):
+
+
+        if(d=="1" and S in self.forbiden_chars):
+            return False        
 
         if(P==""):
             self.time_to=100

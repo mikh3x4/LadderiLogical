@@ -2,8 +2,6 @@
 
 -Add protection to actions that may cause loss of data
 
--Add [],{}"" to vaildating in Entryboxes
-
 -Write asm compiler
 
 -Add timers
@@ -11,3 +9,5 @@
 -Improve graphics
 
 -Extra feature checking
+
+-Sequencer implementation

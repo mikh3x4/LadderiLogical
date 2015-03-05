@@ -30,7 +30,11 @@ class Example(tk.Frame):
         self.canvas.bind("<ButtonPress-1>", self.scroll_start)
         self.canvas.bind("<B1-Motion>", self.scroll_move)
         self.canvas.bind('<Motion>',self.motion)
+        self.canvas.bind("<MouseWheel>", self.on_mousewheel)
 
+    def on_mousewheel(self, event):
+        print(type(event.deltaevent.delta))
+        self.canvas.yview_scroll(-1*(event.delta), "units")
 
 
     def scroll_start(self, event):
@@ -45,6 +49,8 @@ class Example(tk.Frame):
 
 
 if __name__ == "__main__":
+    import sys
+    print(sys.version)
     root = tk.Tk()
     Example(root).pack(fill="both", expand=True)
     root.mainloop()
