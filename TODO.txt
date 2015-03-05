@@ -9,3 +9,5 @@
 -Add timers
 
 -Improve graphics
+
+-Extra feature checking
