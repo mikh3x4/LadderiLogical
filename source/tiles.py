@@ -669,10 +669,10 @@ class Counter(Tile):
         self.upto=data['up_to']
         self.auto_reset.set(data['reset'])
 
-        # self.count_upto.config(validate="none")
+        self.count_upto.config(validate="none")
         self.count_upto.delete(0,tk.END)
-        self.count_upto.insert(0,str(self.upto))
-        # self.count_upto.config(validate="key")
+        self.count_upto.insert(0,data['up_to'])
+        self.count_upto.config(validate="key")
 
         #verify there is no extra fields
 
@@ -801,10 +801,10 @@ class Pulsar(Tile):
     def open_from_file(self,data):
         assert(data['0type']=="pulsar")
         self.time_to=data['time_to']
-        # self.time_in.config(validate="none")
+        self.time_in.config(validate="none")
         self.time_in.delete(0,tk.END)
         self.time_in.insert(0,str(self.time_to))
-        # self.time_in.config(validate="key")
+        self.time_in.config(validate="key")
 
         #verify there is no extra fields
 
