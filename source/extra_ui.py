@@ -136,13 +136,21 @@ class ToolBox(tk.Frame):
         self.select=tk.Button(master=self,text="Select",command=lambda:self.change_tool("select"))
         self.horizontal=tk.Button(master=self,text="Horizontal",command=lambda:self.change_tool("horizontal"))
         self.hswitch=tk.Button(master=self,text="HSwitch",command=lambda:self.change_tool("hswitch"))
+        self.delete=tk.Button(master=self,text="Delete",command=lambda:self.change_tool("delete"))
+        self.flag=tk.Button(master=self,text="Flag",command=lambda:self.change_tool("flag"))
+        self.auto=tk.Button(master=self,text="Auto",command=lambda:self.change_tool("auto"))
 
         self.select.grid(row=0,column=0)
-        self.horizontal.grid(row=0,column=1)
-        self.hswitch.grid(row=0,column=2)
+        self.auto.grid(row=0,column=1)
+        self.delete.grid(row=0,column=2)
+        self.horizontal.grid(row=0,column=3)
+        self.hswitch.grid(row=0,column=4)
+        self.flag.grid(row=0,column=5)
+
 
 
     def change_tool(self,name):
         print("changed to "+name)
+        self.app.board.previous_shift_comand=False
         self.tool=name
 

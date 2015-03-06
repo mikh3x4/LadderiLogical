@@ -9,7 +9,8 @@ class TileBoard(tk.Frame):
 
         self.size_x=self.size_y=400
         self.tile_size=tile_size
-        self.total_size_y=self.total_size_x=1000
+        self.total_size_y=1000
+        self.total_size_x=1400
 
 
         self.canvas = tk.Canvas(self, width=self.size_x, height=self.size_y, background="#7A7A7a")
@@ -42,6 +43,16 @@ class TileBoard(tk.Frame):
 
         self.canvas.bind("<Control-ButtonPress-1>", self.scroll_start)
         self.canvas.bind("<Control-B1-Motion>", self.scroll_move)
+
+        self.bind("s", lambda x:self.app.tools.change_tool("select"))
+        self.bind("a", lambda x:self.app.tools.change_tool("auto"))
+        self.bind("f", lambda x:self.app.tools.change_tool("flag"))
+        self.bind("h", lambda x:self.app.tools.change_tool("hswitch"))
+        self.bind("x", lambda x:self.app.tools.change_tool("delete"))
+
+        # self.canvas.bind("", lambda event: self.focus_set())
+
+        self.previous_shift_comand=False
         # self.canvas.bind('<Motion>',self.motion)
 
         #Manual Initial selection
@@ -57,12 +68,13 @@ class TileBoard(tk.Frame):
     def start(self):
         self.reintegrate_tiles()
         self.update_all()
+        self.focus_set()
 
     def load_from_file(self,data):
 
         self.canvas.configure(scrollregion=(0,0,data["tile_number"][0],data["tile_number"][1]))
-        self.total_size_x=data["tile_number"][0]
-        self.total_size_y=data["tile_number"][1]
+        self.total_size_x=data["tile_number"][0]*self.tile_size
+        self.total_size_y=data["tile_number"][1]*self.tile_size
 
         # still no use as tile array non extendable
 
@@ -144,24 +156,57 @@ class TileBoard(tk.Frame):
 
 
     def click(self,event):
+        
+        if(self.previous_shift_comand):
+            self.app.tools.tool="select"
+
         self.shift_click(event)
 
         self.app.tools.tool="select"
+        self.previous_shift_comand=False
+
 
     def shift_click(self,event):
-
+        self.focus_set()
         if(self.app.tools.tool=='select'):
-            self.select(event)
+            self.tool_select(event)
         elif(self.app.tools.tool=='hswitch'):
-            self.hswitch(event)            
+            self.tool_hswitch(event)            
 
         elif(self.app.tools.tool=='horizontal'):
-            self.horizontal(event)
+            self.tool_horizontal(event)
+        elif(self.app.tools.tool=='delete'):
+            self.tool_delete(event)
+        elif(self.app.tools.tool=='flag'):
+            self.tool_flag(event)
+        elif(self.app.tools.tool=='auto'):
+            self.tool_auto(event)
         else:
             print('Unrecognised tool')
 
+        self.previous_shift_comand=True
 
-    def hswitch(self,event):
+
+    def tool_flag(self,event):
+
+        coords=self.find_tile_coords(event)
+
+        x=coords[0]
+        y=coords[1]
+
+        self.convert_tile(x,y,Flag)
+
+
+    def tool_delete(self,event):
+
+        coords=self.find_tile_coords(event)
+
+        x=coords[0]
+        y=coords[1]
+
+        self.convert_tile(x,y,Tile)
+
+    def tool_hswitch(self,event):
 
         coords=self.find_tile_coords(event)
 
@@ -174,7 +219,7 @@ class TileBoard(tk.Frame):
         self.tiles[x][y].right.set(1)
 
 
-    def horizontal(self,event):
+    def tool_horizontal(self,event):
 
         coords=self.find_tile_coords(event)
 
@@ -186,7 +231,30 @@ class TileBoard(tk.Frame):
         self.tiles[x][y].left.set(1)
         self.tiles[x][y].right.set(1)
 
-    def select(self, event):
+
+    def tool_auto(self,event):
+
+        coords=self.find_tile_coords(event)
+
+        x=coords[0]
+        y=coords[1]
+
+        self.convert_tile(x,y,Relay)
+
+        changee=self.tiles[x][y]
+        for ind, check, direction in zip(changee.adj_ind,changee.conector_checks,[2,3,0,1]):
+
+            if(ind==None):
+                pass
+            elif(type(self.tiles[ind[0]][ind[1]])==Relay):
+                check.set(1)
+                self.tiles[ind[0]][ind[1]].conector_checks[direction].set(1)
+            elif(self.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
+                check.set(1)
+
+
+
+    def tool_select(self, event):
 
         try:
             self.tiles[self.sel_x][self.sel_y].frame.grid_forget()

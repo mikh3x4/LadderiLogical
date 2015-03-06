@@ -62,14 +62,18 @@ class LadderLogic:
 
         self.root.bind("<Command-n>", lambda x:self.file_new())
         self.root.bind("<Command-o>", lambda x:self.file_open())
-        self.root.bind("<Command-s>", lambda x:self.file_save())
+        
         self.root.bind("<Command-Shift-s>", lambda x:self.file_saveas())
         self.root.bind("<Command-w>", self.close_window)
+
+
+
 
         self.filename=file_name
 
         if(self.filename!=""):
             self.filemenu.entryconfigure(2, state=tk.NORMAL)
+            self.root.bind("<Command-s>", lambda x:self.file_save())
 
         print(self.window_list)
 
@@ -121,6 +125,7 @@ class LadderLogic:
 
         self.file_save(file_to_save=file_to_save)
         self.filemenu.entryconfigure(2, state=tk.NORMAL)
+        self.root.bind("<Command-s>", lambda x:self.file_save())
 
         self.filename=file_to_save
 
@@ -132,7 +137,10 @@ class LadderLogic:
 if __name__ == "__main__":
 
     main_root=tk.Tk()
-    window_list=[]
-    LadderLogic(main_root,window_list)
     main_root.withdraw()
+    window_list=[]
+
+
+    LadderLogic(main_root,window_list)
+    
     main_root.mainloop()
