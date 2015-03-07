@@ -32,6 +32,7 @@ class Tile:
         self.switch_convert=tk.Button(self.frame,text="Switch",command=lambda :self.board.convert_tile(self.x,self.y,Switch))
         self.counter_convert=tk.Button(self.frame,text="Counter",command=lambda :self.board.convert_tile(self.x,self.y,Counter))
         self.pulsar_convert=tk.Button(self.frame,text="Pulsar",command=lambda :self.board.convert_tile(self.x,self.y,Pulsar))
+        self.timer_convert=tk.Button(self.frame,text="Timer",command=lambda :self.board.convert_tile(self.x,self.y,Timer))
 
 
         self.tile_convert.pack()
@@ -42,6 +43,7 @@ class Tile:
         self.switch_convert.pack()
         self.counter_convert.pack()
         self.pulsar_convert.pack()
+        self.timer_convert.pack()
 
         self.graphics=[]
 
@@ -856,4 +858,171 @@ class Pulsar(Tile):
             and self.state==1):
             self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].inputs[3]=1
 
-        
+class Timer(Tile):
+
+    def __init__(self, *args):
+
+        super().__init__(*args)
+
+
+        self.conector_checks[0].set(0)
+        self.conector_checks[1].set(1)
+        self.conector_checks[2].set(0)
+        self.conector_checks[3].set(1)
+
+        vcmd = (self.root.register(self.validate), '%P', '%s','%S', '%d')
+
+
+        self.timer_mode = tk.IntVar()
+        self.timer_mode.set(1)
+
+        tk.Radiobutton(master=self.frame, text="Hold", variable=self.timer_mode, value=1).pack()
+        tk.Radiobutton(master=self.frame, text="Delay Monostable", variable=self.timer_mode, value=2).pack()
+        tk.Radiobutton(master=self.frame, text="Manaul", variable=self.timer_mode, value=3).pack()
+
+
+
+        self.time_dalay=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
+        self.time_dalay.pack()
+        self.time_dalay.insert(0,"1000")
+
+        self.time=time()
+
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+
+        self.timer_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#888888",outline="#EEEEEE") 
+        self.timer_shield=self.board.canvas.create_oval((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#DDDDDD",outline="#EEEEEE") 
+        self.timer_tick=self.board.canvas.create_line((self.x+0.5)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#111111") 
+        self.timer_tock=self.board.canvas.create_line((self.x+0.6)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.5)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#111111") 
+
+
+        self.input_update=self.input_update_1
+
+        self.time_to=1000
+        self.state=0
+        self.prev=0
+        self.edge=0
+
+        self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
+
+        self.graphics=[self.timer_box,self.timer_shield,self.timer_tick,self.timer_tock,
+                        self.top_box,self.bottom_box,self.left_box,self.right_box]
+
+
+    def save_to_file(self):
+        out={"0type":"timer"}
+        out['time_to']=self.time_to
+        out['mode']=self.timer_mode.get()
+
+        return out
+
+    def open_from_file(self,data):
+        assert(data['0type']=="pulsar")
+        self.time_to=data['time_to']
+        self.time_dalay.config(validate="none")
+        self.time_dalay.delete(0,tk.END)
+        self.time_dalay.insert(0,str(self.time_to))
+        self.time_dalay.config(validate="key")
+        self.timer_mode.set(data['mode'])
+
+        #verify there is no extra fields
+
+    def validate(self,P,s,S,d):
+
+        self.prev=0
+        if(d=="1" and S in self.forbiden_chars):
+            return False        
+
+        if(P==""):
+            self.time_to=1000
+            return True
+
+        try:
+            self.time_to=int(P)
+        except ValueError:
+            return False
+        print('value updated')
+        return True
+
+    def graphic_update(self):
+
+        if(self.timer_mode.get()==1 or self.timer_mode.get()==2):
+            self.conector_checks[2].set(0)
+        elif(self.timer_mode.get()==3):
+            self.conector_checks[2].set(1)
+
+        for check, box in zip(self.conector_checks,self.graphic_conectors):
+            if(check.get()==1):
+                self.board.canvas.itemconfig(box,fill="#FF0000")
+            else:
+                self.board.canvas.itemconfig(box,fill="")
+
+    def update(self):
+
+        if(self.timer_mode.get()==1):
+            self.output_update_1()
+            self.input_update=self.input_update_1
+
+        elif(self.timer_mode.get()==2):
+            self.output_update_2()
+            self.input_update=self.input_update_2
+
+        elif(self.timer_mode.get()==3):
+            self.output_update_3()
+            self.input_update=self.input_update_3
+
+        self.graphic_update()
+
+
+
+    def input_update_1(self):
+
+        if(self.inputs[3]==1 and self.state==0):
+            self.state==1
+            self.prev=time()
+        else:
+            self.state=0
+            
+    def output_update_1(self):
+
+        if(1000*(time()-self.prev)<int(self.time_to)):
+
+            if(self.adj_ind[1]!=None and self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].conector_checks[3]):
+                self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].inputs[3]=1
+
+
+    def input_update_2(self):
+
+        #Add Ignore or replace extra input "and self.edge==0 on next line"
+
+        if(self.inputs[3]==1 and self.state==0):
+            self.edge=1
+            self.prev=time()
+
+        if(self. inputs[3]==1):
+             self.state=1
+        else:
+            self.state=0
+
+            
+    def output_update_2(self):
+        if(self.edge==1 and 1000*(time()-self.prev)>int(self.time_to)):
+
+            if(self.adj_ind[1]!=None and self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].conector_checks[3]):
+                self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].inputs[3]=1
+
+            self.edge=0
+
+    def input_update_3(self):
+
+        if(self.inputs[3]==1 and self.state==0):
+            self.state=1
+            self.prev=time()
+        else:
+            self.state=0
+            
+    def output_update_3(self):
+        pass
