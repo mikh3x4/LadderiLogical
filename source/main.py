@@ -34,9 +34,9 @@ class LadderLogic:
 
         print("config done")
         self.tools=ToolBox(self.root,self)
-        self.tools.grid(column=0,row=0, sticky="nsew")
+        self.tools.grid(column=0,row=0, sticky="nsew",columnspan=3)
 
-        self.root.grid_rowconfigure(1,weight=0)
+        self.root.grid_rowconfigure(0,weight=0)
         self.root.grid_rowconfigure(1,weight=1)
         self.root.grid_columnconfigure(0,weight=1)
         self.root.grid_columnconfigure(1,weight=0)

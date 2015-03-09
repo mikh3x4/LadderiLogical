@@ -4,7 +4,6 @@
 
 -Write asm compiler
 
--Add timers
 
 -Improve graphics
 

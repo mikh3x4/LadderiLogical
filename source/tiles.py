@@ -905,6 +905,7 @@ class Timer(Tile):
         self.state=0
         self.prev=0
         self.edge=0
+        self.latch=0
 
         self.graphic_conectors=[self.top_box,self.right_box,self.bottom_box,self.left_box]
 
@@ -920,7 +921,7 @@ class Timer(Tile):
         return out
 
     def open_from_file(self,data):
-        assert(data['0type']=="pulsar")
+        assert(data['0type']=="timer")
         self.time_to=data['time_to']
         self.time_dalay.config(validate="none")
         self.time_dalay.delete(0,tk.END)
@@ -949,10 +950,6 @@ class Timer(Tile):
 
     def graphic_update(self):
 
-        if(self.timer_mode.get()==1 or self.timer_mode.get()==2):
-            self.conector_checks[2].set(0)
-        elif(self.timer_mode.get()==3):
-            self.conector_checks[2].set(1)
 
         for check, box in zip(self.conector_checks,self.graphic_conectors):
             if(check.get()==1):
@@ -963,14 +960,17 @@ class Timer(Tile):
     def update(self):
 
         if(self.timer_mode.get()==1):
+            self.conector_checks[2].set(0)
             self.output_update_1()
             self.input_update=self.input_update_1
 
         elif(self.timer_mode.get()==2):
+            self.conector_checks[2].set(0)
             self.output_update_2()
             self.input_update=self.input_update_2
 
         elif(self.timer_mode.get()==3):
+            self.conector_checks[2].set(1)
             self.output_update_3()
             self.input_update=self.input_update_3
 
@@ -1002,7 +1002,7 @@ class Timer(Tile):
             self.edge=1
             self.prev=time()
 
-        if(self. inputs[3]==1):
+        if(self.inputs[3]==1):
              self.state=1
         else:
             self.state=0
@@ -1019,10 +1019,32 @@ class Timer(Tile):
     def input_update_3(self):
 
         if(self.inputs[3]==1 and self.state==0):
-            self.state=1
+            self.edge=1
             self.prev=time()
+
+        if(self.inputs[2]==1):
+            self.latch=0
+
+        if(self.inputs[3]==1):
+             self.state=1
         else:
             self.state=0
+
             
     def output_update_3(self):
-        pass
+
+        if(self.latch==1):
+            if(self.adj_ind[1]!=None and self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].conector_checks[3]):
+                self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].inputs[3]=1
+        
+        if(self.edge==1 and 1000*(time()-self.prev)>int(self.time_to)):
+
+            if(self.adj_ind[1]!=None and self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].conector_checks[3]):
+                self.board.tiles[self.adj_ind[1][0]][self.adj_ind[1][1]].inputs[3]=1
+
+            self.edge=0
+            self.latch=1
+
+
+
+
