@@ -1,0 +1,108 @@
+
+
+
+hold timer: (singluar byte)
+
+BTFSS input_state
+goto no_rest
+MOVLW 
+MOVWF counter
+goto end_temp
+
+no_rest NOP
+NOP
+NOP
+end_temp
+
+CLEAR W
+XORLW counter 
+BTFS STATUS,Z
+goto skip
+DECF counter,F
+BSF output
+BSF outputs...
+goto end
+skip Delay
+end BCF input_state
+
+
+switch:
+BTFSC input_state 
+BTFSS read_flag #if inverter change to BTFSC
+goto skip
+BSF outputs
+BSF outputs...
+goto end
+skip Delay
+
+end BCF input_state
+
+
+genrator:
+BTFSS Flag_name #if inverter change to BTFSC
+goto skip
+
+BSF outputs
+BSF outputs...
+goto end
+skip #Delay
+end
+
+flag:
+BCF Flagname
+BTFSC input_state
+BSF flagname
+BCF input_state
+
+source:
+BSF output
+BSF outputs ...
+
+#1 cycle delay
+NOP
+
+#2 cycle delay
+NOP
+NOP
+
+#3 cycle delay
+NOP
+NOP
+NOP
+
+#4 cycle delay
+call small_delay_4
+
+#5 cycle delay
+call small_delay_5
+
+#6 cycle delay
+call small_delay_6
+
+#7 cycle delay
+Movlw 0
+call delay*3_+1
+
+#8 cycle delay
+Movlw 0
+call delay*3_+2
+
+#9 cycle delay
+Movlw 0
+call delay*3_+3
+
+#10 cycle delay
+Movlw 1
+call delay*3_+1
+
+
+small_delay_6 nop
+small_delay_5 nop
+small_delay_4 return
+
+
+delay*3_+3 Nop
+delay*3_+2 Nop
+delay*3_+1 Decfsz w,w
+goto delay*3_+0
+return
