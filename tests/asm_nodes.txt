@@ -5,17 +5,19 @@ genrator
 flag
 source
 hold timer (single byte)
+counter auto reset
+counter manual reset
 
 
 cycle=number of cycles for node
 n=number of output nodes
 
 
-hold timer: (singluar byte)
+hold timer: (singluar byte) (cycle=14+n)
 
 BTFSS input_state
 goto no_rest
-MOVLW 
+MOVLW time/total_cycles
 MOVWF counter
 goto end_temp
 
@@ -25,23 +27,56 @@ NOP
 end_temp
 
 CLEAR W
-XORLW counter 
+XORLW counter,W
 BTFS STATUS,Z
 goto skip
 DECF counter,F
 BSF output
 BSF outputs...
 goto end
-skip Delay
+skip Delay n+2
 end BCF input_state
 
 
-counter auto reset:
+counter manual reset: (cycle=15+n)
 
+BTFSC reset_input
+CLRF counter_file,F
+
+BTFSS prev_edge
 BTFSS input_state
 goto no_act
 
-INCF counter_file
+MOVLW upto
+XORFW counter_file,W
+BTFSS STATUS,Z
+goto increment
+
+BSF output
+BSF output
+BSF output...
+goto end
+
+no_act Delay 3+n
+goto end
+
+increment INCF counter_file,F
+
+end BCF input_state
+BCF prev_edge
+BTFSC input_state
+BSF prev_edge
+
+
+
+counter auto reset: (cycle=15+n)
+
+
+BTFSS prev_edge
+BTFSS input_state
+goto no_act
+
+INCF counter_file,F
 MOVLW up_to
 XORFW counterfile,W
 BTFSC STATUS,Z
@@ -53,13 +88,15 @@ BSF outputs
 BSF outputs...
 goto end
 
-no_act Delay
+no_act Delay 5+n
 goto end
 
-skip Delay
+skip Delay n+2
 
 end BCF input_state
-
+BCF prev_edge
+BTFSC input_state
+BSF prev_edge
 
 
 switch: (cycle= 6+n)
