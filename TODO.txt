@@ -8,5 +8,3 @@
 -Improve graphics
 
 -Extra feature checking
-
--Sequencer implementation

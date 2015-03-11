@@ -1,4 +1,4 @@
-from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter,Pulsar,Timer
+from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter,Pulsar,Timer,Sequencer
 import tkinter.ttk as ttk
 import tkinter as tk
 class TileBoard(ttk.Frame):
@@ -92,7 +92,7 @@ class TileBoard(ttk.Frame):
         # still no use as tile array non extendable
 
         tile_decode={"relay":Relay,"source":Source,"flag":Flag,"generator":Generator,
-        "switch":Switch,"counter":Counter,"pulsar":Pulsar,"timer":Timer}
+        "switch":Switch,"counter":Counter,"pulsar":Pulsar,"timer":Timer,"sequ":Sequencer}
         for x,col in enumerate(data['board']):
             for y,info in enumerate(col):
                 if(info!="blk"):
