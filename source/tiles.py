@@ -1089,8 +1089,10 @@ class Sequencer(Tile):
 
         self.graphics.extend(stairs)
 
+        self.edge=0
+        self.index=0
 
-    def add_field(self):
+    def add_field(self,name_arg="seq"):
 
         x=len(self.sequence_steps)
 
@@ -1106,14 +1108,17 @@ class Sequencer(Tile):
         entry=ttk.Entry(master=self.frame,width=10,validate="none",validatecommand=vcmd,invalidcommand=temp(x))
         entry.pack()
 
-        name="seq"
+        name=name_arg
+
+
         i=1
         try:
+            self.board.flags[name]
             while 1:
-                self.board.flags[name+str(i)]
+                self.board.flags[name]
                 i+=1
+                name=name_arg+str(i)
         except KeyError:
-            name=name+str(i)
             self.board.flags[name]=[self,0]
 
         entry.delete(0,tk.END)
@@ -1126,7 +1131,7 @@ class Sequencer(Tile):
         x=len(self.sequence_steps)-1
         if(x<0):
             print('Nothing to remove')
-            return
+            return 0
         self.sequence_steps[x][0].pack_forget()
         del self.board.flags[self.sequence_steps[x][1]]
         self.sequence_steps.pop(x)
@@ -1162,7 +1167,7 @@ class Sequencer(Tile):
     def save_to_file(self):
         out={"0type":"sequ"}
         out['checks']=[x.get() for x in self.conector_checks]
-        out['pubname']=self.name
+        out['steps']=[step[1] for step in self.sequence_steps]
 
         return out
 
@@ -1172,33 +1177,38 @@ class Sequencer(Tile):
         for check,inp in zip(self.conector_checks,data['checks']):
             check.set(inp)
 
-        self.name=data['pubname']
-        self.publish_name.config(validate="none")
-        self.publish_name.delete(0,tk.END)
-        self.publish_name.insert(0,self.name)
-        self.publish_name.config(validate="key")
+        for step in data['steps']:
+            self.add_field(name_arg=step)
 
-        self.board.flags[self.name]=[self,0]
         #verify there is no extra fields
 
 
     def clean_delete(self):
-
-        del self.board.flags[self.name]
+        r=1
+        while r!=0:
+            r=self.del_field()
         super().clean_delete()
 
     def input_update(self):
 
-        pass
-        # if(any(map(lambda x:x==1,self.inputs))):
+        on=any(map(lambda x:x==1,self.inputs))
 
-        #     # self.board.canvas.itemconfig(self.on_box,fill="#00FF00")
-        #     self.board.flags[self.name][1]=1
+        if(on and self.edge==0):
+            self.prev=time()
+            self.index=(self.index+1)%len(self.sequence_steps)
+
+        if(on):
+            self.edge=1
+        else:
+            self.edge=0
+
+        for x in range(len(self.sequence_steps)):
+            if(x==self.index):
+                self.board.flags[self.sequence_steps[x][1]][1]=1
+            else:
+                self.board.flags[self.sequence_steps[x][1]][1]=0
 
 
-        # else:
-        #     # self.board.canvas.itemconfig(self.on_box,fill="")
-        #     self.board.flags[self.name][1]=0
 
 
 
