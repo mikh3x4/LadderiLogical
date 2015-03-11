@@ -35,7 +35,7 @@ class Tile:
         self.counter_convert=ttk.Button(self.frame,text="Counter",command=lambda :self.board.convert_tile(self.x,self.y,Counter))
         self.pulsar_convert=ttk.Button(self.frame,text="Pulsar",command=lambda :self.board.convert_tile(self.x,self.y,Pulsar))
         self.timer_convert=ttk.Button(self.frame,text="Timer",command=lambda :self.board.convert_tile(self.x,self.y,Timer))
-
+        self.sequencer_convert=ttk.Button(self.frame,text="Sequencer",command=lambda :self.board.convert_tile(self.x,self.y,Sequencer))
 
         self.tile_convert.pack()
         self.relay_convert.pack()
@@ -46,6 +46,7 @@ class Tile:
         self.counter_convert.pack()
         self.pulsar_convert.pack()
         self.timer_convert.pack()
+        self.sequencer_convert.pack()
 
         self.graphics=[]
 
@@ -1046,6 +1047,162 @@ class Timer(Tile):
 
             self.edge=0
             self.latch=1
+
+class Sequencer(Tile):
+
+    def __init__(self, *args):
+
+        super().__init__(*args)
+
+        vcmd = (self.root.register(self.validate), '%P', '%s','%S','%d')
+
+        for x in self.conector_checks:
+            x.set(1)
+
+        self.add_field_button=ttk.Button(master=self.frame,text="Add",command=self.add_field)
+        self.del_field_button=ttk.Button(master=self.frame,text="Remove",command=self.del_field)
+
+        self.add_field_button.pack()
+        self.del_field_button.pack()
+
+        self.sequence_steps=[]
+
+        for x in range(3):
+            self.add_field()
+
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+
+
+        self.seq_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#DDDDDD",outline="#EEEEEE")
+
+        stairs=[]
+        stairs.append(self.board.canvas.create_line((self.x+0.2)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.4)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF"))
+        stairs.append(self.board.canvas.create_line((self.x+0.4)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.4)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#0000FF"))
+        stairs.append(self.board.canvas.create_line((self.x+0.4)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#0000FF"))
+        stairs.append(self.board.canvas.create_line((self.x+0.6)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#0000FF"))
+        stairs.append(self.board.canvas.create_line((self.x+0.6)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#0000FF"))
+
+        self.graphics=[self.seq_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
+
+        self.graphics.extend(stairs)
+
+        self.name=""
+        i=1
+        try:
+            while 1:
+                self.board.flags[self.name+str(i)]
+                i+=1
+        except KeyError:
+
+            self.name=self.name+str(i)
+            self.board.flags[self.name]=[self,0]
+
+        self.publish_name.delete(0,tk.END)
+        self.publish_name.insert(0,self.name)
+
+    def add_field(self):
+        field=[]
+
+        self.publish_name=ttk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd,invalidcommand=self.invcmd)
+        self.publish_name.pack()
+
+        self.name=""
+        i=1
+        try:
+            while 1:
+                self.board.flags[self.name+str(i)]
+                i+=1
+        except KeyError:
+
+            self.name=self.name+str(i)
+            self.board.flags[self.name]=[self,0]
+
+        self.publish_name.delete(0,tk.END)
+        self.publish_name.insert(0,self.name)
+
+
+
+    def del_field(self):
+        pass
+
+
+    def save_to_file(self):
+        out={"0type":"sequ"}
+        out['checks']=[x.get() for x in self.conector_checks]
+        out['pubname']=self.name
+
+        return out
+
+    def open_from_file(self,data):
+        assert(data['0type']=="sequ")
+
+        for check,inp in zip(self.conector_checks,data['checks']):
+            check.set(inp)
+
+        self.name=data['pubname']
+        self.publish_name.config(validate="none")
+        self.publish_name.delete(0,tk.END)
+        self.publish_name.insert(0,self.name)
+        self.publish_name.config(validate="key")
+
+        self.board.flags[self.name]=[self,0]
+        #verify there is no extra fields
+
+
+    def invcmd(self):
+
+        self.publish_name.delete(0,tk.END)
+        self.publish_name.insert(0,self.name)
+        self.publish_name.config(validate="key")
+
+    def validate(self, P, s,S,d):
+
+        if(d=="1" and S in self.forbiden_chars):
+            return False
+
+        del self.board.flags[self.name]
+        self.name=P 
+        try:
+            self.board.flags[self.name]
+        except KeyError:
+            self.board.flags[self.name]=[self,0]
+            return True
+
+        i=1
+        try:
+            while 1:
+                self.board.flags[self.name+"."+str(i)]
+                i+=1
+        except KeyError:
+
+            self.name=self.name+"."+str(i)
+            self.board.flags[self.name]=[self,0]
+
+        return False
+
+
+
+
+    def clean_delete(self):
+
+        del self.board.flags[self.name]
+        super().clean_delete()
+
+    def input_update(self):
+
+
+        if(any(map(lambda x:x==1,self.inputs))):
+
+            self.board.canvas.itemconfig(self.on_box,fill="#00FF00")
+            self.board.flags[self.name][1]=1
+
+
+        else:
+            self.board.canvas.itemconfig(self.on_box,fill="")
+            self.board.flags[self.name][1]=0
 
 
 
