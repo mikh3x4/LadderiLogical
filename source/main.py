@@ -1,5 +1,6 @@
 from tile_board import TileBoard
 from extra_ui import IOBoard, ToolBox
+import tkinter.ttk as ttk
 import tkinter as tk
 from tkinter import filedialog
 from time import time

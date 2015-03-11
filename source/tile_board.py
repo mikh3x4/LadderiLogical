@@ -1,9 +1,9 @@
 from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter,Pulsar,Timer
+import tkinter.ttk as ttk
 import tkinter as tk
-
-class TileBoard(tk.Frame):
+class TileBoard(ttk.Frame):
     def __init__(self, root,app,tile_size=50):
-        tk.Frame.__init__(self, root)
+        ttk.Frame.__init__(self, root)
         self.root=root
         self.app=app
 
@@ -14,8 +14,8 @@ class TileBoard(tk.Frame):
 
 
         self.canvas = tk.Canvas(self, width=self.size_x, height=self.size_y, background="#7A7A7a")
-        self.xsb = tk.Scrollbar(self, orient="horizontal", command=self.canvas.xview)
-        self.ysb = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.xsb = ttk.Scrollbar(self, orient="horizontal", command=self.canvas.xview)
+        self.ysb = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
         self.canvas.configure(yscrollcommand=self.ysb.set, xscrollcommand=self.xsb.set)
         self.canvas.configure(scrollregion=(0,0,self.total_size_x,self.total_size_y))
 

@@ -1,4 +1,6 @@
+import tkinter.ttk as ttk
 import tkinter as tk
+
 from time import time
 
 class Tile:
@@ -13,7 +15,7 @@ class Tile:
 
         self.inputs=[0,0,0,0]
 
-        self.frame=tk.Frame(master=root)
+        self.frame=ttk.Frame(master=root)
 
         self.bottom=tk.IntVar()
         self.top=tk.IntVar()
@@ -22,17 +24,17 @@ class Tile:
 
         self.conector_checks=[self.top,self.right,self.bottom,self.left]
 
-        tk.Label(master=self.frame,text="Convert to:").pack()
+        ttk.Label(master=self.frame,text="Convert to:").pack()
 
-        self.tile_convert=tk.Button(self.frame,text="Tile",command=lambda :self.board.convert_tile(self.x,self.y,Tile))
-        self.relay_convert=tk.Button(self.frame,text="Relay",command=lambda :self.board.convert_tile(self.x,self.y,Relay))
-        self.source_convert=tk.Button(self.frame,text="Source",command=lambda :self.board.convert_tile(self.x,self.y,Source))
-        self.flag_convert=tk.Button(self.frame,text="Flag",command=lambda :self.board.convert_tile(self.x,self.y,Flag))
-        self.generator_convert=tk.Button(self.frame,text="Generator",command=lambda :self.board.convert_tile(self.x,self.y,Generator))
-        self.switch_convert=tk.Button(self.frame,text="Switch",command=lambda :self.board.convert_tile(self.x,self.y,Switch))
-        self.counter_convert=tk.Button(self.frame,text="Counter",command=lambda :self.board.convert_tile(self.x,self.y,Counter))
-        self.pulsar_convert=tk.Button(self.frame,text="Pulsar",command=lambda :self.board.convert_tile(self.x,self.y,Pulsar))
-        self.timer_convert=tk.Button(self.frame,text="Timer",command=lambda :self.board.convert_tile(self.x,self.y,Timer))
+        self.tile_convert=ttk.Button(self.frame,text="Tile",command=lambda :self.board.convert_tile(self.x,self.y,Tile))
+        self.relay_convert=ttk.Button(self.frame,text="Relay",command=lambda :self.board.convert_tile(self.x,self.y,Relay))
+        self.source_convert=ttk.Button(self.frame,text="Source",command=lambda :self.board.convert_tile(self.x,self.y,Source))
+        self.flag_convert=ttk.Button(self.frame,text="Flag",command=lambda :self.board.convert_tile(self.x,self.y,Flag))
+        self.generator_convert=ttk.Button(self.frame,text="Generator",command=lambda :self.board.convert_tile(self.x,self.y,Generator))
+        self.switch_convert=ttk.Button(self.frame,text="Switch",command=lambda :self.board.convert_tile(self.x,self.y,Switch))
+        self.counter_convert=ttk.Button(self.frame,text="Counter",command=lambda :self.board.convert_tile(self.x,self.y,Counter))
+        self.pulsar_convert=ttk.Button(self.frame,text="Pulsar",command=lambda :self.board.convert_tile(self.x,self.y,Pulsar))
+        self.timer_convert=ttk.Button(self.frame,text="Timer",command=lambda :self.board.convert_tile(self.x,self.y,Timer))
 
 
         self.tile_convert.pack()
@@ -114,10 +116,10 @@ class Relay(Tile):
 
         self.state_index=0.5 #Float to throw error if not assigened
 
-        self.top_cheack=tk.Checkbutton(master=self.frame,text="Top",variable=self.top)
-        self.bottom_cheack=tk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
-        self.left_cheack=tk.Checkbutton(master=self.frame,text="Left",variable=self.left)
-        self.right_cheack=tk.Checkbutton(master=self.frame,text="Right",variable=self.right)
+        self.top_cheack=ttk.Checkbutton(master=self.frame,text="Top",variable=self.top)
+        self.bottom_cheack=ttk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
+        self.left_cheack=ttk.Checkbutton(master=self.frame,text="Left",variable=self.left)
+        self.right_cheack=ttk.Checkbutton(master=self.frame,text="Right",variable=self.right)
 
         
 
@@ -126,7 +128,7 @@ class Relay(Tile):
         self.left_cheack.pack()
         self.right_cheack.pack()
 
-        self.label=tk.Label(master=self.frame,text=str(0))
+        self.label=ttk.Label(master=self.frame,text=str(0))
         self.label.pack()
 
 
@@ -281,7 +283,7 @@ class Flag(Tile):
             x.set(1)
 
 
-        self.publish_name=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd,invalidcommand=self.invcmd)
+        self.publish_name=ttk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd,invalidcommand=self.invcmd)
         self.publish_name.pack()
 
         self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
@@ -392,10 +394,10 @@ class Generator(Tile):
         super().__init__(*args)
 
 
-        self.top_cheack=tk.Checkbutton(master=self.frame,text="Top",variable=self.top)
-        self.bottom_cheack=tk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
-        self.left_cheack=tk.Checkbutton(master=self.frame,text="Left",variable=self.left)
-        self.right_cheack=tk.Checkbutton(master=self.frame,text="Right",variable=self.right)
+        self.top_cheack=ttk.Checkbutton(master=self.frame,text="Top",variable=self.top)
+        self.bottom_cheack=ttk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
+        self.left_cheack=ttk.Checkbutton(master=self.frame,text="Left",variable=self.left)
+        self.right_cheack=ttk.Checkbutton(master=self.frame,text="Right",variable=self.right)
 
         self.top_cheack.pack()
         self.bottom_cheack.pack()
@@ -404,14 +406,14 @@ class Generator(Tile):
 
 
         self.invert=tk.IntVar()
-        self.invert_cheack=tk.Checkbutton(master=self.frame,text="Invert",variable=self.invert,onvalue='0',offvalue='1')
+        self.invert_cheack=ttk.Checkbutton(master=self.frame,text="Invert",variable=self.invert,onvalue='0',offvalue='1')
 
         self.invert.set(1)
         self.invert_cheack.pack()
 
         vcmd = (self.root.register(self.validate), '%S','%d')
 
-        self.subscribe_name=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
+        self.subscribe_name=ttk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
         self.subscribe_name.pack()
 
 
@@ -495,10 +497,10 @@ class Switch(Tile):
         super().__init__(*args)
 
 
-        self.top_cheack=tk.Checkbutton(master=self.frame,text="Top",variable=self.top)
-        self.bottom_cheack=tk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
-        self.left_cheack=tk.Checkbutton(master=self.frame,text="Left",variable=self.left)
-        self.right_cheack=tk.Checkbutton(master=self.frame,text="Right",variable=self.right)
+        self.top_cheack=ttk.Checkbutton(master=self.frame,text="Top",variable=self.top)
+        self.bottom_cheack=ttk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
+        self.left_cheack=ttk.Checkbutton(master=self.frame,text="Left",variable=self.left)
+        self.right_cheack=ttk.Checkbutton(master=self.frame,text="Right",variable=self.right)
 
         self.top_cheack.pack()
         self.bottom_cheack.pack()
@@ -507,7 +509,7 @@ class Switch(Tile):
 
 
         self.invert=tk.IntVar()
-        self.invert_cheack=tk.Checkbutton(master=self.frame,text="Invert",variable=self.invert,onvalue='0',offvalue='1')
+        self.invert_cheack=ttk.Checkbutton(master=self.frame,text="Invert",variable=self.invert,onvalue='0',offvalue='1')
 
         self.invert.set(1)
         self.invert_cheack.pack()
@@ -516,7 +518,7 @@ class Switch(Tile):
 
         vcmd = (self.root.register(self.validate), '%S','%d')
 
-        self.subscribe_name=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
+        self.subscribe_name=ttk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
 
         self.subscribe_name.pack()
 
@@ -628,7 +630,7 @@ class Counter(Tile):
 
         vcmd = (self.root.register(self.validate), '%P', '%s','%S', '%d')
 
-        self.count_upto=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
+        self.count_upto=ttk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
         self.count_upto.pack()
         self.count_upto.insert(0,"1")
 
@@ -637,7 +639,7 @@ class Counter(Tile):
         self.edge=0
 
         self.auto_reset=tk.IntVar()
-        self.auto_reset_cheack=tk.Checkbutton(master=self.frame,text="Auto Reset",variable=self.auto_reset,onvalue='1',offvalue='0')
+        self.auto_reset_cheack=ttk.Checkbutton(master=self.frame,text="Auto Reset",variable=self.auto_reset,onvalue='1',offvalue='0')
 
         self.auto_reset.set(1)
         self.auto_reset_cheack.pack()
@@ -758,7 +760,7 @@ class Pulsar(Tile):
 
         vcmd = (self.root.register(self.validate), '%P', '%s','%S', '%d')
 
-        self.time_in=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
+        self.time_in=ttk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
         self.time_in.pack()
         self.time_in.insert(0,"1000")
 
@@ -876,13 +878,13 @@ class Timer(Tile):
         self.timer_mode = tk.IntVar()
         self.timer_mode.set(1)
 
-        tk.Radiobutton(master=self.frame, text="Hold", variable=self.timer_mode, value=1).pack()
-        tk.Radiobutton(master=self.frame, text="Delay Monostable", variable=self.timer_mode, value=2).pack()
-        tk.Radiobutton(master=self.frame, text="Manaul", variable=self.timer_mode, value=3).pack()
+        ttk.Radiobutton(master=self.frame, text="Hold", variable=self.timer_mode, value=1).pack()
+        ttk.Radiobutton(master=self.frame, text="Delay Monostable", variable=self.timer_mode, value=2).pack()
+        ttk.Radiobutton(master=self.frame, text="Manaul", variable=self.timer_mode, value=3).pack()
 
 
 
-        self.time_dalay=tk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
+        self.time_dalay=ttk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd)
         self.time_dalay.pack()
         self.time_dalay.insert(0,"1000")
 

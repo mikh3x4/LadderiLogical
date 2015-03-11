@@ -1,10 +1,10 @@
+import tkinter.ttk as ttk
 import tkinter as tk
-
-class IOBoard(tk.Frame):
+class IOBoard(ttk.Frame):
 
     forbiden_chars=["'",'"',"[","]","{","}",","]
     def __init__(self,root,app):
-        tk.Frame.__init__(self, root)
+        ttk.Frame.__init__(self, root)
         self.root=root
         self.app=app
 
@@ -12,16 +12,16 @@ class IOBoard(tk.Frame):
         self.input_list=[]
 
 
-        tk.Label(master=self,text="Outputs").grid(column=1,row=0)
-        tk.Label(master=self,text="Inputs").grid(column=2,row=0)
+        ttk.Label(master=self,text="Outputs").grid(column=1,row=0)
+        ttk.Label(master=self,text="Inputs").grid(column=2,row=0)
 
         v2cmd = (self.root.register(self.validate_2),'%S','%d')
 
         for x in range(8):
-            a=tk.Entry(master=self,width=10,validate="key",validatecommand=v2cmd)
+            a=ttk.Entry(master=self,width=10,validate="key",validatecommand=v2cmd)
             a.grid(column=1,row=x+1)
             a.insert(0,'1')
-            b=tk.Label(master=self,text='0')
+            b=ttk.Label(master=self,text='0')
             b.grid(column=0,row=x+1)
             self.output_list.append([a,b])
 
@@ -36,14 +36,14 @@ class IOBoard(tk.Frame):
                     self.input_list[r][0].config(validate="key")
                 return invcmd
 
-            a=tk.Entry(master=self,width=10,validate="none",validatecommand=vcmd,invalidcommand=temp(x))
+            a=ttk.Entry(master=self,width=10,validate="none",validatecommand=vcmd,invalidcommand=temp(x))
             a.grid(column=2,row=x+1)
             name=str(x+1)+"io"
             a.delete(0,tk.END)
             a.insert(0,name)
             self.app.board.flags[name]=[None,0]
             c=tk.IntVar()
-            b=tk.Checkbutton(master=self,variable=c)
+            b=ttk.Checkbutton(master=self,variable=c)
             b.grid(column=3,row=x+1)
             a.config(validate="key")
             self.input_list.append([a,c,name])
@@ -123,22 +123,22 @@ class IOBoard(tk.Frame):
 
 
 
-class ToolBox(tk.Frame):
+class ToolBox(ttk.Frame):
 
 
     def __init__(self,root,app):
-        tk.Frame.__init__(self, root)
+        ttk.Frame.__init__(self, root)
         self.root=root
         self.app=app
 
         self.tool="select"
 
-        self.select=tk.Button(master=self,text="Select",command=lambda:self.change_tool("select"))
-        self.horizontal=tk.Button(master=self,text="Horizontal",command=lambda:self.change_tool("horizontal"))
-        self.hswitch=tk.Button(master=self,text="HSwitch",command=lambda:self.change_tool("hswitch"))
-        self.delete=tk.Button(master=self,text="Delete",command=lambda:self.change_tool("delete"))
-        self.flag=tk.Button(master=self,text="Flag",command=lambda:self.change_tool("flag"))
-        self.auto=tk.Button(master=self,text="Auto",command=lambda:self.change_tool("auto"))
+        self.select=ttk.Button(master=self,text="Select",command=lambda:self.change_tool("select"))
+        self.horizontal=ttk.Button(master=self,text="Horizontal",command=lambda:self.change_tool("horizontal"))
+        self.hswitch=ttk.Button(master=self,text="HSwitch",command=lambda:self.change_tool("hswitch"))
+        self.delete=ttk.Button(master=self,text="Delete",command=lambda:self.change_tool("delete"))
+        self.flag=ttk.Button(master=self,text="Flag",command=lambda:self.change_tool("flag"))
+        self.auto=ttk.Button(master=self,text="Auto",command=lambda:self.change_tool("auto"))
 
         self.select.grid(row=0,column=0)
         self.auto.grid(row=0,column=1)
