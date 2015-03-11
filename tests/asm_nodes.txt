@@ -1,4 +1,14 @@
+DONE:
+delay
+switch
+genrator
+flag
+source
+hold timer (single byte)
 
+
+cycle=number of cycles for node
+n=number of output nodes
 
 
 hold timer: (singluar byte)
@@ -26,35 +36,62 @@ skip Delay
 end BCF input_state
 
 
-switch:
-BTFSC input_state 
-BTFSS read_flag #if inverter change to BTFSC
-goto skip
+counter auto reset:
+
+BTFSS input_state
+goto no_act
+
+INCF counter_file
+MOVLW up_to
+XORFW counterfile,W
+BTFSC STATUS,Z
+goto SKIP
+
+CLRF counter_file
+BSF outputs
 BSF outputs
 BSF outputs...
 goto end
+
+no_act Delay
+goto end
+
 skip Delay
 
 end BCF input_state
 
 
-genrator:
+
+switch: (cycle= 6+n)
+BTFSC input_state 
+BTFSS read_flag #if inverter change to BTFSC
+
+goto skip
+BSF outputs
+BSF outputs...
+goto end
+skip Delay n+1
+
+end BCF input_state
+
+
+genrator: (cycle= 4+n)
 BTFSS Flag_name #if inverter change to BTFSC
 goto skip
 
 BSF outputs
 BSF outputs...
 goto end
-skip #Delay
+skip Delay 1+n
 end
 
-flag:
+flag: (cycle= 4)
 BCF Flagname
 BTFSC input_state
 BSF flagname
 BCF input_state
 
-source:
+source: (cycle= n)
 BSF output
 BSF outputs ...
 
