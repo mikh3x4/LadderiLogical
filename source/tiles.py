@@ -1067,8 +1067,8 @@ class Sequencer(Tile):
 
         self.sequence_steps=[]
 
-        for x in range(3):
-            self.add_field()
+        # for x in range(3):
+        #     self.add_field()
 
         self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
         self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
@@ -1089,44 +1089,74 @@ class Sequencer(Tile):
 
         self.graphics.extend(stairs)
 
-        self.name=""
-        i=1
-        try:
-            while 1:
-                self.board.flags[self.name+str(i)]
-                i+=1
-        except KeyError:
-
-            self.name=self.name+str(i)
-            self.board.flags[self.name]=[self,0]
-
-        self.publish_name.delete(0,tk.END)
-        self.publish_name.insert(0,self.name)
 
     def add_field(self):
-        field=[]
 
-        self.publish_name=ttk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd,invalidcommand=self.invcmd)
-        self.publish_name.pack()
+        x=len(self.sequence_steps)
 
-        self.name=""
+        vcmd = (self.root.register(self.validate), '%P','%S','%d',x)
+
+        def temp(r):
+            def invcmd():
+                self.sequence_steps[r][0].delete(0,tk.END)
+                self.sequence_steps[r][0].insert(0,self.sequence_steps[r][1])
+                self.sequence_steps[r][0].config(validate="key")
+            return invcmd
+
+        entry=ttk.Entry(master=self.frame,width=10,validate="none",validatecommand=vcmd,invalidcommand=temp(x))
+        entry.pack()
+
+        name="seq"
         i=1
         try:
             while 1:
-                self.board.flags[self.name+str(i)]
+                self.board.flags[name+str(i)]
                 i+=1
         except KeyError:
+            name=name+str(i)
+            self.board.flags[name]=[self,0]
 
-            self.name=self.name+str(i)
-            self.board.flags[self.name]=[self,0]
+        entry.delete(0,tk.END)
+        entry.insert(0,name)
 
-        self.publish_name.delete(0,tk.END)
-        self.publish_name.insert(0,self.name)
-
-
+        self.sequence_steps.append([entry,name])
+        entry.config(validate="key")
 
     def del_field(self):
-        pass
+        x=len(self.sequence_steps)-1
+        if(x<0):
+            print('Nothing to remove')
+            return
+        self.sequence_steps[x][0].pack_forget()
+        del self.board.flags[self.sequence_steps[x][1]]
+        self.sequence_steps.pop(x)
+
+
+    def validate(self, P,S,d,n):
+
+        if(d=="1" and S in self.forbiden_chars):
+            return False
+
+        n=int(n)
+        del self.board.flags[self.sequence_steps[n][1]]
+        self.sequence_steps[n][1]=P
+        try:
+            self.board.flags[self.sequence_steps[n][1]]
+        except KeyError:
+            self.board.flags[self.sequence_steps[n][1]]=[None,0]
+            return True
+
+        i=1
+        try:
+            while 1:
+                self.board.flags[self.sequence_steps[n][1]+"."+str(i)]
+                i+=1
+        except KeyError:
+            self.sequence_steps[n][1]=self.sequence_steps[n][1]+"."+str(i)
+            self.board.flags[self.sequence_steps[n][1]]=[None,0]
+
+
+        return False
 
 
     def save_to_file(self):
@@ -1152,40 +1182,6 @@ class Sequencer(Tile):
         #verify there is no extra fields
 
 
-    def invcmd(self):
-
-        self.publish_name.delete(0,tk.END)
-        self.publish_name.insert(0,self.name)
-        self.publish_name.config(validate="key")
-
-    def validate(self, P, s,S,d):
-
-        if(d=="1" and S in self.forbiden_chars):
-            return False
-
-        del self.board.flags[self.name]
-        self.name=P 
-        try:
-            self.board.flags[self.name]
-        except KeyError:
-            self.board.flags[self.name]=[self,0]
-            return True
-
-        i=1
-        try:
-            while 1:
-                self.board.flags[self.name+"."+str(i)]
-                i+=1
-        except KeyError:
-
-            self.name=self.name+"."+str(i)
-            self.board.flags[self.name]=[self,0]
-
-        return False
-
-
-
-
     def clean_delete(self):
 
         del self.board.flags[self.name]
@@ -1193,16 +1189,16 @@ class Sequencer(Tile):
 
     def input_update(self):
 
+        pass
+        # if(any(map(lambda x:x==1,self.inputs))):
 
-        if(any(map(lambda x:x==1,self.inputs))):
-
-            self.board.canvas.itemconfig(self.on_box,fill="#00FF00")
-            self.board.flags[self.name][1]=1
+        #     # self.board.canvas.itemconfig(self.on_box,fill="#00FF00")
+        #     self.board.flags[self.name][1]=1
 
 
-        else:
-            self.board.canvas.itemconfig(self.on_box,fill="")
-            self.board.flags[self.name][1]=0
+        # else:
+        #     # self.board.canvas.itemconfig(self.on_box,fill="")
+        #     self.board.flags[self.name][1]=0
 
 
 
