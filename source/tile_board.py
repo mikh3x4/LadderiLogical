@@ -44,11 +44,17 @@ class TileBoard(ttk.Frame):
         self.canvas.bind("<Control-ButtonPress-1>", self.scroll_start)
         self.canvas.bind("<Control-B1-Motion>", self.scroll_move)
 
+        self.canvas.bind("<MouseWheel>", self.on_mousewheel_y)
+        self.canvas.bind("<Shift-MouseWheel>", self.on_mousewheel_x)
+
+
+
         self.bind("s", lambda x:self.app.tools.change_tool("select"))
         self.bind("a", lambda x:self.app.tools.change_tool("auto"))
         self.bind("f", lambda x:self.app.tools.change_tool("flag"))
         self.bind("h", lambda x:self.app.tools.change_tool("hswitch"))
         self.bind("x", lambda x:self.app.tools.change_tool("delete"))
+
 
         # self.canvas.bind("", lambda event: self.focus_set())
 
@@ -63,6 +69,13 @@ class TileBoard(ttk.Frame):
             self.sel_x*self.tile_size+self.tile_size,self.sel_y*self.tile_size+self.tile_size, tags="selection_box",outline="#0000FF")
 
         self.tiles[self.sel_x][self.sel_y].frame.grid(column=1,row=1, sticky="nsew")
+
+
+    def on_mousewheel_y(self, event):
+        self.canvas.yview_scroll(-1*(event.delta), "units")
+
+    def on_mousewheel_x(self, event):
+        self.canvas.xview_scroll(-1*(event.delta), "units")
 
 
     def start(self):
