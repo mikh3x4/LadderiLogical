@@ -5,12 +5,56 @@ genrator
 flag
 source
 hold timer (single byte)
+hold timer (double byte)
 counter auto reset
 counter manual reset
 
 
 cycle=number of cycles for node
 n=number of output nodes
+
+hold timer: (double byte) (cycle=n+24)
+
+BTFSS input_state
+goto no_rest
+
+MOVLW time/total_cycles_lo
+MOVWF counter_lo
+
+MOVLW time/total_cycles_hi
+MOVWF counter_hi
+
+goto end_temp
+
+no_rest Delay 5
+end_temp
+
+CLEAR W
+XORLW counter_lo,W
+
+BTFSC STATUS,Z
+goto skip1
+
+CLRF W
+XORLW counter_hi,W
+
+BTFSC STATUS,Z
+goto skip2
+
+CLRF W
+XORWF counter_lo,W
+BTFSC STAUTS Z
+DECF counter_hi,F
+DECF counter_lo,F
+
+BSF output
+BSF outputs...
+goto end
+skip1 Delay 4
+skip2 Delay 6+n
+
+end BCF input_state
+
 
 
 hold timer: (singluar byte) (cycle=14+n)
@@ -28,7 +72,7 @@ end_temp
 
 CLEAR W
 XORLW counter,W
-BTFS STATUS,Z
+BTFSC STATUS,Z
 goto skip
 DECF counter,F
 BSF output
