@@ -158,7 +158,8 @@ class Relay(Tile):
             print(inp)
             check.set(inp)
 
-        #verify there is no extra fields
+        if(len(data)!=2): #0type checks
+            print("File contains unimplemented feature in a Relay Tile")
 
     def reintegrate(self):
 
@@ -263,7 +264,9 @@ class Source(Tile):
         for check,inp in zip(self.conector_checks,data['checks']):
             check.set(inp)
 
-        #verify there is no extra fields
+        if(len(data)!=2): #0type checks
+            print("File contains unimplemented feature in a Source Tile")
+
 
     def output_update(self):
 
@@ -333,7 +336,9 @@ class Flag(Tile):
         self.publish_name.config(validate="key")
 
         self.board.flags[self.name]=[self,0]
-        #verify there is no extra fields
+
+        if(len(data)!=3): #0type checks pubname
+            print("File contains unimplemented feature in a Flag Tile")
 
 
     def invcmd(self):
@@ -459,7 +464,8 @@ class Generator(Tile):
         self.subscribe_name.insert(0,data['subname'])
         # self.subscribe_name.config(validate="key")
 
-        #verify there is no extra fields
+        if(len(data)!=4): #0type checks subname invert
+            print("File contains unimplemented feature in a Generator Tile")
 
     def graphic_update(self):
 
@@ -573,7 +579,8 @@ class Switch(Tile):
         self.subscribe_name.insert(0,data['subname'])
         # self.subscribe_name.config(validate="key")
 
-        #verify there is no extra fields
+        if(len(data)!=4): #0type checks subname invert
+            print("File contains unimplemented feature in a Switch Tile")
 
     def graphic_update(self):
 
@@ -679,7 +686,8 @@ class Counter(Tile):
         self.count_upto.insert(0,data['up_to'])
         self.count_upto.config(validate="key")
 
-        #verify there is no extra fields
+        if(len(data)!=3): #0type up_to reset
+            print("File contains unimplemented feature in a Counter Tile")
 
 
 
@@ -811,7 +819,8 @@ class Pulsar(Tile):
         self.time_in.insert(0,str(self.time_to))
         self.time_in.config(validate="key")
 
-        #verify there is no extra fields
+        if(len(data)!=2): #0type time_to
+            print("File contains unimplemented feature in a Pulsar Tile")
 
     def validate(self,P,s,S,d):
 
@@ -932,7 +941,8 @@ class Timer(Tile):
         self.time_dalay.config(validate="key")
         self.timer_mode.set(data['mode'])
 
-        #verify there is no extra fields
+        if(len(data)!=3): #0type time_to mode
+            print("File contains unimplemented feature in a Timer Tile")
 
     def validate(self,P,s,S,d):
 
@@ -1067,8 +1077,6 @@ class Sequencer(Tile):
 
         self.sequence_steps=[]
 
-        # for x in range(3):
-        #     self.add_field()
 
         self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
         self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
@@ -1180,7 +1188,8 @@ class Sequencer(Tile):
         for step in data['steps']:
             self.add_field(name_arg=step)
 
-        #verify there is no extra fields
+        if(len(data)!=3): #0type checks steps
+            print("File contains unimplemented feature in a Sequencer Tile")
 
 
     def clean_delete(self):

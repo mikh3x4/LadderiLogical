@@ -74,6 +74,10 @@ class IOBoard(ttk.Frame):
             self.output_list[i][0].delete(0,tk.END)
             self.output_list[i][0].insert(0,data["outputs"][i])
 
+        if(len(data)!=2): #inputs outputs
+            print("File contains unimplemented feature in IOBoard")
+
+
     def validate_2(self,S,d):
 
         if(d=="1" and S in self.forbiden_chars):

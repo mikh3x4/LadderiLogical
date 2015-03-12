@@ -4,7 +4,5 @@
 
 -Write asm compiler
 
-
 -Improve graphics
 
--Extra feature checking

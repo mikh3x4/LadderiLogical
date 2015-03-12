@@ -104,6 +104,9 @@ class TileBoard(ttk.Frame):
                     print(type(self.tiles[x][y]))
                     self.tiles[x][y].open_from_file(info)
 
+        if(len(data)!=2): #tile_number board
+            print("File contains unimplemented feature in TileBoard")
+
 
     def save_to_file(self):
 

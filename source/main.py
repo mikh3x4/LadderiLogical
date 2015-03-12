@@ -31,6 +31,9 @@ class LadderLogic:
             self.board.load_from_file(file_data['TileBoard'])
             self.io.load_from_file(file_data['IOBoard'])
 
+            if(len(file_data)!=4): #0header settings TileBoard IOBoard
+                print("File contains unimplemented toplevel feature")
+
         self.board.start()
 
         print("config done")
