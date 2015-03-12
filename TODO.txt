@@ -6,3 +6,4 @@
 
 -Improve graphics
 
+-Make switches directional
