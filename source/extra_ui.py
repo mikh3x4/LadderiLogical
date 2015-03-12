@@ -124,7 +124,40 @@ class IOBoard(ttk.Frame):
         for x in self.input_list:
             self.app.board.flags[x[2]][1]=x[1].get()
 
+class DirectionSelector(tk.Canvas):
 
+    def __init__(self,root,conector_ints):
+
+        self.root=root
+        size=100
+        super().__init__(root,width=size, height=size, background="#7A7A7a")
+
+        self.xview_moveto(0)
+        self.yview_moveto(0)
+
+        self.conector_ints=conector_ints
+
+        self.buttons=[]
+        self.buttons.append(self.create_polygon(0,0,size/2,size/2,size,0,fill="#FF0000",outline="#EEEEEE"))
+        self.buttons.append(self.create_polygon(size,0,size/2,size/2,size,size,fill="#FF0000",outline="#EEEEEE"))
+        self.buttons.append(self.create_polygon(size,size,size/2,size/2,0,size,fill="#FF0000",outline="#EEEEEE"))
+        self.buttons.append(self.create_polygon(0,0,size/2,size/2,0,size,fill="#FF0000",outline="#EEEEEE"))
+
+        for button,check in zip(self.buttons,self.conector_ints):
+            self.tag_bind(button, '<ButtonPress-1>', lambda event: TriangleClick(button,check))
+
+
+    def TriangleClick(self,button,check):
+
+        print('clac')
+        if(self.check==1):
+            self.itemconfig(button,fill="#00FF00")
+            self.check=0
+        if(self.check==0):
+            self.itemconfig(button,fill="#FF0000")
+            self.check=1
+
+        print(self.check)
 
 
 class ToolBox(ttk.Frame):
@@ -158,3 +191,10 @@ class ToolBox(ttk.Frame):
         self.app.board.previous_shift_comand=False
         self.tool=name
 
+
+if __name__ == '__main__':
+    test=tk.Tk()
+
+    c=DirectionSelector(test,[])
+    c.pack()
+    test.mainloop()
