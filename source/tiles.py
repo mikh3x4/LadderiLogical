@@ -2,6 +2,7 @@ import tkinter.ttk as ttk
 import tkinter as tk
 
 from time import time
+from extra_ui import DirectionSelector
 
 class Tile:
 
@@ -117,20 +118,12 @@ class Relay(Tile):
 
         self.state_index=0.5 #Float to throw error if not assigened
 
-        self.top_cheack=ttk.Checkbutton(master=self.frame,text="Top",variable=self.top)
-        self.bottom_cheack=ttk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
-        self.left_cheack=ttk.Checkbutton(master=self.frame,text="Left",variable=self.left)
-        self.right_cheack=ttk.Checkbutton(master=self.frame,text="Right",variable=self.right)
 
-        
+        self.dir_selector=DirectionSelector(self.frame,self.conector_checks)
+        self.dir_selector.pack()
 
-        self.top_cheack.pack()
-        self.bottom_cheack.pack()
-        self.left_cheack.pack()
-        self.right_cheack.pack()
-
-        self.label=ttk.Label(master=self.frame,text=str(0))
-        self.label.pack()
+        for check in self.conector_checks:
+            check.trace("w",self.dir_selector.variable_changed)
 
 
         self.relay_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
@@ -219,8 +212,6 @@ class Relay(Tile):
                 self.board.canvas.itemconfig(box,fill="#FF0000")
             else:
                 self.board.canvas.itemconfig(box,fill="")         
-
-        self.label.config(text=str(self)+str(self.inputs[3]))
 
     def output_update(self):
 
@@ -400,16 +391,11 @@ class Generator(Tile):
         super().__init__(*args)
 
 
-        self.top_cheack=ttk.Checkbutton(master=self.frame,text="Top",variable=self.top)
-        self.bottom_cheack=ttk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
-        self.left_cheack=ttk.Checkbutton(master=self.frame,text="Left",variable=self.left)
-        self.right_cheack=ttk.Checkbutton(master=self.frame,text="Right",variable=self.right)
+        self.dir_selector=DirectionSelector(self.frame,self.conector_checks)
+        self.dir_selector.pack()
 
-        self.top_cheack.pack()
-        self.bottom_cheack.pack()
-        self.left_cheack.pack()
-        self.right_cheack.pack()
-
+        for check in self.conector_checks:
+            check.trace("w",self.dir_selector.variable_changed)
 
         self.invert=tk.IntVar()
         self.invert_cheack=ttk.Checkbutton(master=self.frame,text="Invert",variable=self.invert,onvalue='0',offvalue='1')
@@ -504,15 +490,11 @@ class Switch(Tile):
         super().__init__(*args)
 
 
-        self.top_cheack=ttk.Checkbutton(master=self.frame,text="Top",variable=self.top)
-        self.bottom_cheack=ttk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
-        self.left_cheack=ttk.Checkbutton(master=self.frame,text="Left",variable=self.left)
-        self.right_cheack=ttk.Checkbutton(master=self.frame,text="Right",variable=self.right)
+        self.dir_selector=DirectionSelector(self.frame,self.conector_checks)
+        self.dir_selector.pack()
 
-        self.top_cheack.pack()
-        self.bottom_cheack.pack()
-        self.left_cheack.pack()
-        self.right_cheack.pack()
+        for check in self.conector_checks:
+            check.trace("w",self.dir_selector.variable_changed)
 
 
         self.invert=tk.IntVar()

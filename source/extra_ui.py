@@ -1,5 +1,6 @@
 import tkinter.ttk as ttk
 import tkinter as tk
+
 class IOBoard(ttk.Frame):
 
     forbiden_chars=["'",'"',"[","]","{","}",","]
@@ -129,7 +130,7 @@ class DirectionSelector(tk.Canvas):
     def __init__(self,root,conector_ints):
 
         self.root=root
-        size=100
+        size=70
         super().__init__(root,width=size, height=size, background="#7A7A7a")
 
         self.xview_moveto(0)
@@ -153,16 +154,23 @@ class DirectionSelector(tk.Canvas):
 
     def triangle_click(self,i):
 
-        print('calc')
         if(self.conector_ints[i].get()==1):
-            self.itemconfig(self.buttons[i],fill="#00FF00")
             self.conector_ints[i].set(0)
 
         elif(self.conector_ints[i].get()==0):
-            self.itemconfig(self.buttons[i],fill="#FF0000")
             self.conector_ints[i].set(1)
 
         print(self.conector_ints[i])
+
+    def variable_changed(self,*args):
+
+        for direction,button in zip(self.conector_ints,self.buttons):
+            if(direction.get()==1):
+                self.itemconfig(button,fill="#00FF00")
+
+
+            elif(direction.get()==0):
+                self.itemconfig(button,fill="#FF0000")
 
 
 class ToolBox(ttk.Frame):
@@ -200,6 +208,6 @@ class ToolBox(ttk.Frame):
 if __name__ == '__main__':
     test=tk.Tk()
 
-    c=DirectionSelector(test,[1,1,1,1])
+    c=DirectionSelector(test,[tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
     c.pack()
     test.mainloop()
