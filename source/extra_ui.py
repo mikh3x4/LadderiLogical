@@ -143,21 +143,26 @@ class DirectionSelector(tk.Canvas):
         self.buttons.append(self.create_polygon(size,size,size/2,size/2,0,size,fill="#FF0000",outline="#EEEEEE"))
         self.buttons.append(self.create_polygon(0,0,size/2,size/2,0,size,fill="#FF0000",outline="#EEEEEE"))
 
-        for button,check in zip(self.buttons,self.conector_ints):
-            self.tag_bind(button, '<ButtonPress-1>', lambda event: TriangleClick(button,check))
+        for i in range(len(self.buttons)):
+            def generate_func(r):
+                return lambda event: self.triangle_click(r)
+
+            self.tag_bind(self.buttons[i],'<ButtonPress-1>',generate_func(i))
 
 
-    def TriangleClick(self,button,check):
 
-        print('clac')
-        if(self.check==1):
-            self.itemconfig(button,fill="#00FF00")
-            self.check=0
-        if(self.check==0):
-            self.itemconfig(button,fill="#FF0000")
-            self.check=1
+    def triangle_click(self,i):
 
-        print(self.check)
+        print('calc')
+        if(self.conector_ints[i].get()==1):
+            self.itemconfig(self.buttons[i],fill="#00FF00")
+            self.conector_ints[i].set(0)
+
+        elif(self.conector_ints[i].get()==0):
+            self.itemconfig(self.buttons[i],fill="#FF0000")
+            self.conector_ints[i].set(1)
+
+        print(self.conector_ints[i])
 
 
 class ToolBox(ttk.Frame):
@@ -195,6 +200,6 @@ class ToolBox(ttk.Frame):
 if __name__ == '__main__':
     test=tk.Tk()
 
-    c=DirectionSelector(test,[])
+    c=DirectionSelector(test,[1,1,1,1])
     c.pack()
     test.mainloop()
