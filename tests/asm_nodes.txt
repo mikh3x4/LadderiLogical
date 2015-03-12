@@ -199,19 +199,19 @@ call small_delay_6
 
 #7 cycle delay
 Movlw 0
-call delay*3_+1
+call delay3_1
 
 #8 cycle delay
 Movlw 0
-call delay*3_+2
+call delay3_2
 
 #9 cycle delay
 Movlw 0
-call delay*3_+3
+call delay3_3
 
 #10 cycle delay
 Movlw 1
-call delay*3_+1
+call delay3_1
 
 
 small_delay_6 nop
@@ -219,8 +219,8 @@ small_delay_5 nop
 small_delay_4 return
 
 
-delay*3_+3 Nop
-delay*3_+2 Nop
-delay*3_+1 Decfsz w,w
-goto delay*3_+0
+delay3_3 Nop
+delay3_2 Nop
+delay3_1 Decfsz w,w
+goto delay1_0
 return
