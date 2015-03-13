@@ -5,5 +5,3 @@
 -Write asm compiler
 
 -Improve graphics
-
--Make switches directional

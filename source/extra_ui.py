@@ -160,8 +160,6 @@ class DirectionSelector(tk.Canvas):
         elif(self.conector_ints[i].get()==0):
             self.conector_ints[i].set(1)
 
-        print(self.conector_ints[i])
-
     def variable_changed(self,*args):
 
         for direction,button in zip(self.conector_ints,self.buttons):
@@ -171,6 +169,34 @@ class DirectionSelector(tk.Canvas):
 
             elif(direction.get()==0):
                 self.itemconfig(button,fill="#FF0000")
+
+
+class BiDirectionSelector(DirectionSelector):
+
+    def triangle_click(self,i):
+
+        if(self.conector_ints[i].get()==1):
+            self.conector_ints[i].set(2)
+
+        elif(self.conector_ints[i].get()==2):
+            self.conector_ints[i].set(0)
+
+        elif(self.conector_ints[i].get()==0):
+            self.conector_ints[i].set(1)
+
+
+    def variable_changed(self,*args):
+
+        for direction,button in zip(self.conector_ints,self.buttons):
+            if(direction.get()==1):
+                self.itemconfig(button,fill="#00FF00")
+
+            elif(direction.get()==0):
+                self.itemconfig(button,fill="#FF0000")
+
+            elif(direction.get()==2):
+                self.itemconfig(button,fill="#0000FF")
+
 
 
 class ToolBox(ttk.Frame):
