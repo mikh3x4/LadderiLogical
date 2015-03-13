@@ -1,5 +1,6 @@
 import tkinter.ttk as ttk
 import tkinter as tk
+
 class IOBoard(ttk.Frame):
 
     forbiden_chars=["'",'"',"[","]","{","}",","]
@@ -124,6 +125,77 @@ class IOBoard(ttk.Frame):
         for x in self.input_list:
             self.app.board.flags[x[2]][1]=x[1].get()
 
+class DirectionSelector(tk.Canvas):
+
+    def __init__(self,root,conector_ints):
+
+        self.root=root
+        size=70
+        super().__init__(root,width=size, height=size, background="#7A7A7a")
+
+        self.xview_moveto(0)
+        self.yview_moveto(0)
+
+        self.conector_ints=conector_ints
+
+        self.buttons=[]
+        self.buttons.append(self.create_polygon(0,0,size/2,size/2,size,0,fill="#FF0000",outline="#EEEEEE"))
+        self.buttons.append(self.create_polygon(size,0,size/2,size/2,size,size,fill="#FF0000",outline="#EEEEEE"))
+        self.buttons.append(self.create_polygon(size,size,size/2,size/2,0,size,fill="#FF0000",outline="#EEEEEE"))
+        self.buttons.append(self.create_polygon(0,0,size/2,size/2,0,size,fill="#FF0000",outline="#EEEEEE"))
+
+        for i in range(len(self.buttons)):
+            def generate_func(r):
+                return lambda event: self.triangle_click(r)
+
+            self.tag_bind(self.buttons[i],'<ButtonPress-1>',generate_func(i))
+
+
+
+    def triangle_click(self,i):
+
+        if(self.conector_ints[i].get()==1):
+            self.conector_ints[i].set(0)
+
+        elif(self.conector_ints[i].get()==0):
+            self.conector_ints[i].set(1)
+
+    def variable_changed(self,*args):
+
+        for direction,button in zip(self.conector_ints,self.buttons):
+            if(direction.get()==1):
+                self.itemconfig(button,fill="#00FF00")
+
+
+            elif(direction.get()==0):
+                self.itemconfig(button,fill="#FF0000")
+
+
+class BiDirectionSelector(DirectionSelector):
+
+    def triangle_click(self,i):
+
+        if(self.conector_ints[i].get()==1):
+            self.conector_ints[i].set(2)
+
+        elif(self.conector_ints[i].get()==2):
+            self.conector_ints[i].set(0)
+
+        elif(self.conector_ints[i].get()==0):
+            self.conector_ints[i].set(1)
+
+
+    def variable_changed(self,*args):
+
+        for direction,button in zip(self.conector_ints,self.buttons):
+            if(direction.get()==1):
+                self.itemconfig(button,fill="#00FF00")
+
+            elif(direction.get()==0):
+                self.itemconfig(button,fill="#FF0000")
+
+            elif(direction.get()==2):
+                self.itemconfig(button,fill="#0000FF")
 
 
 
@@ -158,3 +230,10 @@ class ToolBox(ttk.Frame):
         self.app.board.previous_shift_comand=False
         self.tool=name
 
+
+if __name__ == '__main__':
+    test=tk.Tk()
+
+    c=DirectionSelector(test,[tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
+    c.pack()
+    test.mainloop()

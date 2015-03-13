@@ -212,6 +212,11 @@ class TileBoard(ttk.Frame):
 
         self.convert_tile(x,y,Flag)
 
+        for ind,direction in zip(self.tiles[x][y].adj_ind,[2,3,0,1]):
+
+            if(ind!=None and type(self.tiles[ind[0]][ind[1]])==Relay):
+                self.tiles[ind[0]][ind[1]].conector_checks[direction].set(1)
+
 
     def tool_delete(self,event):
 
@@ -231,8 +236,14 @@ class TileBoard(ttk.Frame):
 
         self.convert_tile(x,y,Switch)
 
-        self.tiles[x][y].left.set(1)
+        self.tiles[x][y].left.set(2)
         self.tiles[x][y].right.set(1)
+
+        if(self.tiles[x][y].adj_ind[3]!=None and type(self.tiles[x-1][y])==Relay):
+            self.tiles[x-1][y].conector_checks[1].set(1)
+
+        if(self.tiles[x][y].adj_ind[1]!=None and type(self.tiles[x+1][y])==Relay):
+            self.tiles[x+1][y].conector_checks[3].set(1)
 
 
     def tool_horizontal(self,event):
@@ -247,6 +258,12 @@ class TileBoard(ttk.Frame):
         self.tiles[x][y].left.set(1)
         self.tiles[x][y].right.set(1)
 
+        if(self.tiles[x][y].adj_ind[3]!=None and type(self.tiles[x-1][y])==Relay):
+            self.tiles[x-1][y].conector_checks[1].set(1)
+
+        if(self.tiles[x][y].adj_ind[1]!=None and type(self.tiles[x+1][y])==Relay):
+            self.tiles[x+1][y].conector_checks[3].set(1)
+
 
     def tool_auto(self,event):
 
@@ -258,6 +275,7 @@ class TileBoard(ttk.Frame):
         self.convert_tile(x,y,Relay)
 
         changee=self.tiles[x][y]
+
         for ind, check, direction in zip(changee.adj_ind,changee.conector_checks,[2,3,0,1]):
 
             if(ind==None):
@@ -265,7 +283,7 @@ class TileBoard(ttk.Frame):
             elif(type(self.tiles[ind[0]][ind[1]])==Relay):
                 check.set(1)
                 self.tiles[ind[0]][ind[1]].conector_checks[direction].set(1)
-            elif(self.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
+            elif(self.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0):
                 check.set(1)
 
 

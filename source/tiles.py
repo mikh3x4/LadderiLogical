@@ -2,6 +2,7 @@ import tkinter.ttk as ttk
 import tkinter as tk
 
 from time import time
+from extra_ui import DirectionSelector,BiDirectionSelector
 
 class Tile:
 
@@ -117,20 +118,12 @@ class Relay(Tile):
 
         self.state_index=0.5 #Float to throw error if not assigened
 
-        self.top_cheack=ttk.Checkbutton(master=self.frame,text="Top",variable=self.top)
-        self.bottom_cheack=ttk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
-        self.left_cheack=ttk.Checkbutton(master=self.frame,text="Left",variable=self.left)
-        self.right_cheack=ttk.Checkbutton(master=self.frame,text="Right",variable=self.right)
 
-        
+        self.dir_selector=DirectionSelector(self.frame,self.conector_checks)
+        self.dir_selector.pack()
 
-        self.top_cheack.pack()
-        self.bottom_cheack.pack()
-        self.left_cheack.pack()
-        self.right_cheack.pack()
-
-        self.label=ttk.Label(master=self.frame,text=str(0))
-        self.label.pack()
+        for check in self.conector_checks:
+            check.trace("w",self.dir_selector.variable_changed)
 
 
         self.relay_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
@@ -219,8 +212,6 @@ class Relay(Tile):
                 self.board.canvas.itemconfig(box,fill="#FF0000")
             else:
                 self.board.canvas.itemconfig(box,fill="")         
-
-        self.label.config(text=str(self)+str(self.inputs[3]))
 
     def output_update(self):
 
@@ -400,16 +391,11 @@ class Generator(Tile):
         super().__init__(*args)
 
 
-        self.top_cheack=ttk.Checkbutton(master=self.frame,text="Top",variable=self.top)
-        self.bottom_cheack=ttk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
-        self.left_cheack=ttk.Checkbutton(master=self.frame,text="Left",variable=self.left)
-        self.right_cheack=ttk.Checkbutton(master=self.frame,text="Right",variable=self.right)
+        self.dir_selector=DirectionSelector(self.frame,self.conector_checks)
+        self.dir_selector.pack()
 
-        self.top_cheack.pack()
-        self.bottom_cheack.pack()
-        self.left_cheack.pack()
-        self.right_cheack.pack()
-
+        for check in self.conector_checks:
+            check.trace("w",self.dir_selector.variable_changed)
 
         self.invert=tk.IntVar()
         self.invert_cheack=ttk.Checkbutton(master=self.frame,text="Invert",variable=self.invert,onvalue='0',offvalue='1')
@@ -504,15 +490,11 @@ class Switch(Tile):
         super().__init__(*args)
 
 
-        self.top_cheack=ttk.Checkbutton(master=self.frame,text="Top",variable=self.top)
-        self.bottom_cheack=ttk.Checkbutton(master=self.frame,text="Bottom",variable=self.bottom)
-        self.left_cheack=ttk.Checkbutton(master=self.frame,text="Left",variable=self.left)
-        self.right_cheack=ttk.Checkbutton(master=self.frame,text="Right",variable=self.right)
+        self.dir_selector=BiDirectionSelector(self.frame,self.conector_checks)
+        self.dir_selector.pack()
 
-        self.top_cheack.pack()
-        self.bottom_cheack.pack()
-        self.left_cheack.pack()
-        self.right_cheack.pack()
+        for check in self.conector_checks:
+            check.trace("w",self.dir_selector.variable_changed)
 
 
         self.invert=tk.IntVar()
@@ -551,7 +533,7 @@ class Switch(Tile):
         self.graphics=[self.missing_key,self.switch_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.on_box_top,self.on_box_bottom,self.on_box_rigth,self.on_box_left]
 
 
-        self.state=0
+        self.states=0
 
     def validate(self,S,d):
         if(d=="1" and S in self.forbiden_chars):
@@ -587,13 +569,16 @@ class Switch(Tile):
         for check, box in zip(self.conector_checks,self.graphic_conectors):
             if(check.get()==1):
                 self.board.canvas.itemconfig(box,fill="#FF0000")
+
+            elif(check.get()==2):
+                self.board.canvas.itemconfig(box,fill="#0000FF")
             else:
                 self.board.canvas.itemconfig(box,fill="")
 
         try:
             if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get()):
                 for box,check in zip(self.on_conectors,self.conector_checks):
-                    if(check.get()==1):
+                    if(check.get()!=0):
                         self.board.canvas.itemconfig(box,fill="#FF0000")
             else:
                 for box in self.on_conectors:
@@ -603,26 +588,25 @@ class Switch(Tile):
             self.board.canvas.itemconfig(self.missing_key,fill="#FFFF00")
 
     def input_update(self):
-        if(self.inputs[1]==1 or self.inputs[3]==1):
-            self.state=1
-        else:
-            self.state=0
+        for check,inp in zip(self.conector_checks,self.inputs):
+            if(check.get()==2 and inp==1):
+                self.state=1
+            else:
+                self.state=0
 
 
     def output_update(self):
         try:
 
-            if(self.state==1):
+            if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() and self.state==1):
                 for ind,check,direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
 
-                    if(self.board.flags[self.subscribe_name.get()][1]==self.invert.get() 
-                        and check.get()==1
-                        and ind!=None):
+                    if(ind!=None and check.get()==1):
                         self.board.tiles[ind[0]][ind[1]].inputs[direction]=1
-
 
         except KeyError:
             pass
+
 
 class Counter(Tile):
 
