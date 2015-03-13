@@ -275,16 +275,16 @@ class Flag(Tile):
         vcmd = (self.root.register(self.validate), '%P', '%s','%S','%d')
 
         for x in self.conector_checks:
-            x.set(1)
+            x.set(2)
 
 
         self.publish_name=ttk.Entry(master=self.frame,width=10,validate="key",validatecommand=vcmd,invalidcommand=self.invcmd)
         self.publish_name.pack()
 
-        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
-        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
-        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
-        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#0000FF",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#0000FF",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#0000FF",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF",outline="")
 
 
         self.pub_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#3b9aeF",outline="#EEEEEE")
@@ -607,7 +607,6 @@ class Switch(Tile):
         except KeyError:
             pass
 
-
 class Counter(Tile):
 
     def __init__(self, *args):
@@ -618,7 +617,7 @@ class Counter(Tile):
         self.conector_checks[0].set(0)
         self.conector_checks[1].set(1)
         self.conector_checks[2].set(1)
-        self.conector_checks[3].set(1)
+        self.conector_checks[3].set(2)
 
         vcmd = (self.root.register(self.validate), '%P', '%s','%S', '%d')
 
@@ -697,6 +696,9 @@ class Counter(Tile):
         for check, box in zip(self.conector_checks,self.graphic_conectors):
             if(check.get()==1):
                 self.board.canvas.itemconfig(box,fill="#FF0000")
+
+            elif(check.get()==2):
+                self.board.canvas.itemconfig(box,fill="#0000FF")
             else:
                 self.board.canvas.itemconfig(box,fill="")
 
@@ -712,9 +714,9 @@ class Counter(Tile):
     def input_update(self):
 
         if(self.auto_reset.get()==1):
-            self.bottom.set(0)
+            self.conector_checks[2].set(0)
         else:
-            self.bottom.set(1)
+            self.conector_checks[2].set(2)
 
         if(self.inputs[3]==0):
             self.edge=1
@@ -749,7 +751,7 @@ class Pulsar(Tile):
         self.conector_checks[0].set(0)
         self.conector_checks[1].set(1)
         self.conector_checks[2].set(0)
-        self.conector_checks[3].set(1)
+        self.conector_checks[3].set(2)
 
         vcmd = (self.root.register(self.validate), '%P', '%s','%S', '%d')
 
@@ -828,6 +830,9 @@ class Pulsar(Tile):
         for check, box in zip(self.conector_checks,self.graphic_conectors):
             if(check.get()==1):
                 self.board.canvas.itemconfig(box,fill="#FF0000")
+
+            elif(check.get()==2):
+                self.board.canvas.itemconfig(box,fill="#0000FF")
             else:
                 self.board.canvas.itemconfig(box,fill="")
 
@@ -864,7 +869,7 @@ class Timer(Tile):
         self.conector_checks[0].set(0)
         self.conector_checks[1].set(1)
         self.conector_checks[2].set(0)
-        self.conector_checks[3].set(1)
+        self.conector_checks[3].set(2)
 
         vcmd = (self.root.register(self.validate), '%P', '%s','%S', '%d')
 
@@ -951,6 +956,9 @@ class Timer(Tile):
         for check, box in zip(self.conector_checks,self.graphic_conectors):
             if(check.get()==1):
                 self.board.canvas.itemconfig(box,fill="#FF0000")
+
+            elif(check.get()==2):
+                self.board.canvas.itemconfig(box,fill="#0000FF")
             else:
                 self.board.canvas.itemconfig(box,fill="")
 
@@ -967,7 +975,7 @@ class Timer(Tile):
             self.input_update=self.input_update_2
 
         elif(self.timer_mode.get()==3):
-            self.conector_checks[2].set(1)
+            self.conector_checks[2].set(2)
             self.output_update_3()
             self.input_update=self.input_update_3
 
@@ -1051,7 +1059,7 @@ class Sequencer(Tile):
         vcmd = (self.root.register(self.validate), '%P', '%s','%S','%d')
 
         for x in self.conector_checks:
-            x.set(1)
+            x.set(2)
 
         self.add_field_button=ttk.Button(master=self.frame,text="Add",command=self.add_field)
         self.del_field_button=ttk.Button(master=self.frame,text="Remove",command=self.del_field)
@@ -1062,10 +1070,10 @@ class Sequencer(Tile):
         self.sequence_steps=[]
 
 
-        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#FF0000",outline="")
-        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#FF0000",outline="")
-        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000",outline="")
-        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000",outline="")
+        self.top_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y)*self.board.tile_size,fill="#0000FF",outline="")
+        self.bottom_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.7)*self.board.tile_size,(self.y+1)*self.board.tile_size,fill="#0000FF",outline="")
+        self.left_box=self.board.canvas.create_rectangle((self.x+0.7)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#0000FF",outline="")
+        self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF",outline="")
 
 
         self.seq_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#DDDDDD",outline="#EEEEEE")
