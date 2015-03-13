@@ -1,10 +1,55 @@
 
-
+from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter,Pulsar,Timer,Sequencer
 
 class Compiler:
 
-	def __init__(self):
-		pass
+	def __init__(self,tiles):
+
+		self.tiles_linearlised
+
+		for x,col in enumerate(tiles):
+			for y,tile in enumerate(col):
+
+				if(tile!=Tile and tile!=Relay):
+
+					single={}
+
+        # tile_decode={"relay":Relay,"source":Source,"flag":Flag,"generator":Generator,
+        # "switch":Switch,"counter":Counter,"pulsar":Pulsar,"timer":Timer,"sequ":Sequencer}
+
+					single['coords']=[x,y]
+					single['outputs']=[]
+
+
+					for ind, check, direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
+						if (ind!=None and check.get()==1):
+
+							if (type(self.board.tiles[ind[0]][ind[1]])==Relay
+								and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
+
+								single['outputs'].append(self.board.tiles[ind[0]][ind[1]].state_index)
+
+							elif(type(self.board.tiles[ind[0]][ind[1]])==Flag
+								and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0):
+
+								single['outputs'].append([ind[0],ind[1]])
+
+
+							elif(type(self.board.tiles[ind[0]][ind[1]])==Switch
+								and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==2):
+
+								single['outputs'].append([ind[0],ind[1]])
+
+
+
+
+
+							
+
+
+					self.tiles_linearlised.append(single)
+
+
 
 
 
