@@ -16,9 +16,10 @@ class Compiler:
 
         # tile_decode={"relay":Relay,"source":Source,"flag":Flag,"generator":Generator,
         # "switch":Switch,"counter":Counter,"pulsar":Pulsar,"timer":Timer,"sequ":Sequencer}
-
+        			single['type']=tile
 					single['coords']=[x,y]
 					single['outputs']=[]
+					single['options']=[]
 
 
 					for ind, check, direction in zip(self.adj_ind,self.conector_checks,[2,3,0,1]):
@@ -41,12 +42,42 @@ class Compiler:
 								single['outputs'].append([ind[0],ind[1]])
 
 
+							elif(type(self.board.tiles[ind[0]][ind[1]])==Counter
+								and direction==3):
+
+								single['outputs'].append([ind[0],ind[1]])
+
+							elif(type(self.board.tiles[ind[0]][ind[1]])==Counter
+								and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
+								and direction==2):
+
+								single['outputs'].append([ind[0],ind[1]],"Reset_Code")
+
+
+							elif(type(self.board.tiles[ind[0]][ind[1]])==Timer
+								and direction==3):
+
+								single['outputs'].append([ind[0],ind[1]],self.board.tiles[ind[0]][ind[1]].timer_mode.get())
+
+							elif(type(self.board.tiles[ind[0]][ind[1]])==Timer
+								and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
+								and direction==2):
+
+								single['outputs'].append([ind[0],ind[1]],"Reset_Code")
 
 
 
-							
+							elif(type(self.board.tiles[ind[0]][ind[1]])==Pulsar
+								and direction==3):
+
+								single['outputs'].append([ind[0],ind[1]])
 
 
+							elif(type(self.board.tiles[ind[0]][ind[1]])==Sequencer
+								and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0):
+
+								single['outputs'].append([ind[0],ind[1]])
+	
 					self.tiles_linearlised.append(single)
 
 
