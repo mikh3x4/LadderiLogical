@@ -3,47 +3,50 @@
 
 import tiles as tile_mod
 
-class Compiler:
 
-    def __init__(self,board):
+class Node:
 
-        self.total_cycles=0
+    def __init__(self,tile,x,y):
 
-        self.board=board
-
-
-        for x,col in enumerate(self.board.tiles):
-            for y,tile in enumerate(col):
-
-                if(type(tile)!=tile_mod.Tile and type(tile)!=tile_mod.Relay):
-
-                    single={}
+        self.cycles=0
+        self.info={}
 
 
-                    single['type']=tile
-                    single['coords']=[x,y]
-                    
-                    single['options']=[]
+        self.info['type']=type(tile)
+        self.info['coords']=[x,y]
+        
+        self.info['options']=[]
 
 
-                    if(type(tile)!=tile_mod.Flag and type(tile)!=tile_mod.Sequencer):
-                        single['outputs']=[]
-                        for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
-                            if (ind!=None and check.get()==1):
+        if(type(tile)!=tile_mod.Flag and type(tile)!=tile_mod.Sequencer):
+            self.info['outputs']=[]
+            for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
+                if (ind!=None and check.get()==1):
 
-                                if (type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Relay
-                                    and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
-                                    print('run relay seach')
-                                    single['outputs'].extend(self.parse_relays(self.board.tiles[ind[0]][ind[1]]))
+                    if (type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Relay
+                        and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
+                        self.info['outputs'].extend(self.parse_relays(self.board.tiles[ind[0]][ind[1]]))
 
-                                else:
-                                    potencial_tile=self.parse_non_relay_conections(ind, check, direction)
-                                    if(potencial_tile!=None):
-                                        single['outputs'].append(potencial_tile)
+                    else:
+                        potencial_tile=self.parse_non_relay_conections(ind, check, direction)
+                        if(potencial_tile!=None):
+                            self.info['outputs'].append(potencial_tile)
 
-                        print(single)
+            print(self.info)
 
 
+        if(self.info['type']==tile_mod.Flag):
+            self.info['options'].append(tile.self.name)
+
+        elif(self.info['type']==tile_mod.Generator):
+            self.info['options'].append(self.subscribe_name.get())
+            self.info['options'].append(self.invert.get())
+
+
+
+    def generate_code(self,total_cycles):
+
+        pass
 
 
 
@@ -148,6 +151,37 @@ class Compiler:
 
         if(6<cycles):
             return [" MOVLW "+str(int(cycles/3)-2)," CALL delay3_"+str( 3 if cycles%3==0 else cycles%3)]
+
+
+class Compiler:
+
+    def __init__(self,board):
+
+        self.total_cycles=0
+        self.board=board
+
+        self.tiles_linear=[]
+
+
+
+
+        for x,col in enumerate(self.board.tiles):
+            for y,tile in enumerate(col):
+
+                if(type(tile)!=tile_mod.Tile and type(tile)!=tile_mod.Relay):
+
+                    self.tiles_linear.append(Node(tile,x,y))
+
+
+
+
+    def get_code(self,ioinfo):
+
+        pass
+
+
+
+
 
     def delay_footer(self):
         return ["small_delay_6 nop",
