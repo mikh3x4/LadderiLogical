@@ -1,5 +1,6 @@
 import tkinter.ttk as ttk
 import tkinter as tk
+from asm_compiler import Compiler
 
 class IOBoard(ttk.Frame):
 
@@ -216,6 +217,7 @@ class ToolBox(ttk.Frame):
         self.flag=ttk.Button(master=self,text="Flag",command=lambda:self.change_tool("flag"))
         self.auto=ttk.Button(master=self,text="Auto",command=lambda:self.change_tool("auto"))
 
+
         self.select.grid(row=0,column=0)
         self.auto.grid(row=0,column=1)
         self.delete.grid(row=0,column=2)
@@ -223,6 +225,9 @@ class ToolBox(ttk.Frame):
         self.hswitch.grid(row=0,column=4)
         self.flag.grid(row=0,column=5)
 
+
+        self.compile=ttk.Button(master=self,text="Compile Testing!",command=lambda:Compiler(self.app.board))
+        self.compile.grid(row=0,column=6)
 
 
     def change_tool(self,name):
