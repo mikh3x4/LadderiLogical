@@ -33,7 +33,7 @@ class Compiler:
 
                                 if (type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Relay
                                     and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
-
+                                    print('run relay seach')
                                     single['outputs'].extend(self.parse_relays(self.board.tiles[ind[0]][ind[1]]))
 
                                 else:
@@ -51,17 +51,19 @@ class Compiler:
         i=relay_example.state_index
 
         out=[]
-        for relay in self.board.relay_groups[i]:
+        for tile in self.board.relay_groups[i]:
+
+            for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
 
 
-            if(type(relay)!=tile_mod.Tile and type(relay)!=tile_mod.Relay):
+                if(ind!=None and check.get()==1
+                    and type(self.board.tiles[ind[0]][ind[1]])!=tile_mod.Tile 
+                    and type(self.board.tiles[ind[0]][ind[1]])!=tile_mod.Relay):
 
-                for ind, check, direction in zip(relay.adj_ind,relay.conector_checks,[2,3,0,1]):
-                    if (ind!=None and check.get()==1):
 
-                        potencial_tile=self.parse_non_relay_conections(ind, check, direction)
-                        if(potencial_tile!=None):
-                            out.append(potencial_tile)
+                    potencial_tile=self.parse_non_relay_conections(ind, check, direction)
+                    if(potencial_tile!=None):
+                        out.append(potencial_tile)
 
         return out
 
