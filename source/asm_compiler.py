@@ -11,12 +11,9 @@ class Node:
         self.cycles=0
         self.info={}
 
-
-        self.info['type']=type(tile)
+        
         self.info['coords']=[x,y]
         
-        self.info['options']=[]
-
 
         if(type(tile)!=tile_mod.Flag and type(tile)!=tile_mod.Sequencer):
             self.info['outputs']=[]
@@ -35,16 +32,31 @@ class Node:
             print(self.info)
 
 
-        if(self.info['type']==tile_mod.Flag):
-            self.info['options'].append(tile.self.name)
-
-        elif(self.info['type']==tile_mod.Generator):
-            self.info['options'].append(self.subscribe_name.get())
-            self.info['options'].append(self.invert.get())
+        self.info["save"]=tile.save_to_file()
 
 
 
-    def generate_code(self,total_cycles):
+def Source_generate(self):
+    pass
+def Flag_generate(self):
+    pass
+def Generator_generate(self):
+    pass
+def Switch_generate(self):
+    pass
+def Counter_generate(self):
+    pass
+def Pulsar_generate(self):
+    pass
+def Timer_generate(self):
+    pass
+def Sequencer_generate(self):
+    pass
+
+
+
+
+    def propose_code(self,total_cycles):
 
         pass
 
