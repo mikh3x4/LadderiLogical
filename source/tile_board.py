@@ -1,6 +1,7 @@
 from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter,Pulsar,Timer,Sequencer
 import tkinter.ttk as ttk
 import tkinter as tk
+
 class TileBoard(ttk.Frame):
     def __init__(self, root,app,tile_size=50):
         ttk.Frame.__init__(self, root)
