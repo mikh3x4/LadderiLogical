@@ -287,7 +287,7 @@ class Flag(Tile):
         self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF",outline="")
 
 
-        self.pub_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#3b9aeF",outline="#EEEEEE")
+        self.pub_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#7EBF20",outline="#EEEEEE")
         self.on_box=self.board.canvas.create_rectangle((self.x+0.4)*self.board.tile_size,(self.y+0.4)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.6)*self.board.tile_size,fill="",outline="")
 
         self.graphics=[self.on_box,self.pub_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
@@ -1076,14 +1076,14 @@ class Sequencer(Tile):
         self.right_box=self.board.canvas.create_rectangle((self.x+0.3)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+1)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF",outline="")
 
 
-        self.seq_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#DDDDDD",outline="#EEEEEE")
+        self.seq_box=self.board.canvas.create_rectangle((self.x+0.2)*self.board.tile_size,(self.y+0.2)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.8)*self.board.tile_size,fill="#AAAAAA",outline="#EEEEEE")
 
         stairs=[]
-        stairs.append(self.board.canvas.create_line((self.x+0.2)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.4)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#0000FF"))
-        stairs.append(self.board.canvas.create_line((self.x+0.4)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.4)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#0000FF"))
-        stairs.append(self.board.canvas.create_line((self.x+0.4)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#0000FF"))
-        stairs.append(self.board.canvas.create_line((self.x+0.6)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#0000FF"))
-        stairs.append(self.board.canvas.create_line((self.x+0.6)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#0000FF"))
+        stairs.append(self.board.canvas.create_line((self.x+0.2)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.4)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,fill="#FF0000"))
+        stairs.append(self.board.canvas.create_line((self.x+0.4)*self.board.tile_size,(self.y+0.7)*self.board.tile_size,(self.x+0.4)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#FF0000"))
+        stairs.append(self.board.canvas.create_line((self.x+0.4)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,fill="#FF0000"))
+        stairs.append(self.board.canvas.create_line((self.x+0.6)*self.board.tile_size,(self.y+0.5)*self.board.tile_size,(self.x+0.6)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000"))
+        stairs.append(self.board.canvas.create_line((self.x+0.6)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,(self.x+0.8)*self.board.tile_size,(self.y+0.3)*self.board.tile_size,fill="#FF0000"))
 
         self.graphics=[self.seq_box,self.top_box,self.bottom_box,self.left_box,self.right_box]
 
