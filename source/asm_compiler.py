@@ -9,44 +9,179 @@ class Node:
     def __init__(self,board,tile,x,y):
 
         self.cycles=0
-        self.info={}
+        self.code=[]
+
 
         self.board=board
-        self.info['coords']=[x,y]
+
+        self.x=x
+        self.y=y
         
 
 
-        self.info['outputs']=[]
+        self.outputs=[]
 
         for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
             if (ind!=None and check.get()==1):
 
                 if (type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Relay
                     and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
-                    self.info['outputs'].extend(self.parse_relays(self.board.tiles[ind[0]][ind[1]]))
+                    self.outputs.extend(self.parse_relays(self.board.tiles[ind[0]][ind[1]]))
 
                 else:
                     potencial_tile=self.parse_non_relay_conections(ind, check, direction)
                     if(potencial_tile!=None):
-                        self.info['outputs'].append(potencial_tile)
+                        self.outputs.append(potencial_tile)
 
-        
+        self.save_file=tile.save_to_file()
+
+        print(x,y,self.outputs,self.save_file)
+
+    def get_bitflag_names(self):
+        out=[self.tile_label(ind[0],ind[1],"con")]
+
+        if(self.save_file['0type']=='timer'):
+            out.append(self.tile_label(ind[0],ind[1],"reset"))
+
+        elif(self.save_file['0type']=='counter'):
+            out.append(self.tile_label(ind[0],ind[1],"reset"))
+            out.append(self.tile_label(ind[0],ind[1],"edge"))
+
+        elif(self.save_file['0type']=='flag'):
+            out.append("flag_"+self.save_file["pubname"])
 
 
-        self.info["save"]=tile.save_to_file()
+        elif(self.save_file['0type']=='sequ'):
+            out.extend(map(lambda x:"flag_"+x,self.save_file["steps"]))
 
-        print(self.info)
+
+    def set_bit_flag_names(self,bit_reg):
+        self.bit_reg=bit_reg
+
+
 
     def Source_generate(self):
-        pass
+        for out in self.outputs:
+            self.code.append(" BSF "+out)
+
+        self.cycles=len(self.outputs)
+
     def Flag_generate(self):
-        pass
+
+        assert(self.outputs==[])
+
+        input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+        flag_name=self.bit_reg["flag_"+self.save_file["pubname"]]
+
+        self.code.append(" BCF "+flag_name)
+        self.code.append(" BTFSC "+input_name)
+        self.code.append(" BSF "+flag_name)
+        self.code.append(" BCF "+input_name)
+
+        self.cycles=4
+
+
     def Generator_generate(self):
-        pass
+
+        flag_read_name=self.bit_reg["flag_"+self.save_file["subname"]]
+
+        if(self.save_file['invert']==1)
+            self.code.append(" BTFSS "+flag_read_name)
+        else:
+            self.code.append(" BTFSC "+flag_read_name)
+
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
+
+        for out in self.outputs:
+            self.code.append(" BSF "+out)
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+
+        self.code.append(self.tile_label(self.x,self.y,"skip"))
+        self.code.extend(self.delay_code(len(self.outputs)+1))
+
+        self.code.append(self.tile_label(self.x,self.y,"end"))
+
+
+        self.cycles=len(self.outputs)+4
+
     def Switch_generate(self):
-        pass
+
+        flag_read_name=self.bit_reg["flag_"+self.save_file["subname"]]
+        input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+
+        self.code.append(" BTFSC "+input_name)
+
+        if(self.save_file['invert']==1)
+            self.code.append(" BTFSS "+flag_read_name)
+        else:
+            self.code.append(" BTFSC "+flag_read_name)
+
+
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
+
+        for out in self.outputs:
+            self.code.append(" BSF "+out)
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+
+        self.code.append(self.tile_label(self.x,self.y,"skip"))
+        self.code.extend(self.delay_code(len(self.outputs)+1))
+
+        self.code.append(self.tile_label(self.x,self.y,"end"))
+        self.code.append(" BCF "+input_name)
+
+
+        self.cycles=len(self.outputs)+6
+
     def Counter_generate(self):
-        pass
+        if(self.save_file['reset']==1):
+            # auto_reset
+            up_tp=self.save_file['up_to']
+            edge=self.tile_label(self.x,self.y,"edge")
+            input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+            counter_register=self.tile_label(self.x,self.y,"counter")
+
+            if(up_to>255):
+                print('counter too big for single register')
+                raise UserWarning
+
+            self.code.append(" BTFSS "+edge)
+            self.code.append(" BTFSS "+input_name)
+            self.code.append(" goto "+self.tile_label(self.x,self.y,"no_act"))
+
+            self.code.append(" INCF "+counter_register+",F")
+            self.code.append(" MOVLW d'"+up_to+"'")
+            self.code.append(" XORFW "+counter_register+",W")
+            self.code.append(" BTFSC STATUS,Z")
+            self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
+
+            self.code.append("CLRF "+counter_register)
+            for out in self.outputs:
+                self.code.append(" BSF "+out)
+            self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+
+            self.code.append(self.tile_label(self.x,self.y,"no_act"))
+            self.code.extend(self.delay_code(len(self.outputs)+5))
+            self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+
+            self.code.append(self.tile_label(self.x,self.y,"skip"))
+            self.code.extend(self.delay_code(len(self.outputs)+2))
+
+            self.code.append(self.tile_label(self.x,self.y,"end"))
+            self.code.append(" BCF "+input_name)
+            self.code.append(" BCF "+edge)
+            self.code.append(" BTFSC "+input_name)
+            self.code.append(" BSF "+edge)
+
+
+
+            self.cycles=len(self.outputs)+15
+            return
+        else:
+            # manual_reset
+
+            return
+
+
     def Pulsar_generate(self):
         pass
     def Timer_generate(self):
@@ -58,7 +193,7 @@ class Node:
 
 
     def propose_code(self,total_cycles):
-
+        self.code=[]
         pass
 
 
@@ -93,33 +228,26 @@ class Node:
             and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
             and direction==2):
 
-            return self.tile_coord_label(ind[0],ind[1],"reset")
+            return self.tile_label(ind[0],ind[1],"reset")
 
 
         elif(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Timer
             and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
             and direction==2):
 
-            return self.tile_coord_label(ind[0],ind[1],"reset")
+            return self.tile_label(ind[0],ind[1],"reset")
 
         elif(self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==2):
 
-            return self.tile_coord_label(ind[0],ind[1],"con")
-
-
-
-
+            return self.tile_label(ind[0],ind[1],"con")
 
         return None
 
 
 
-
-    def tiles_outputed_to_by_relay(self,index,relay_group):
-        pass
-
-    def tile_coord_label(self,x,y,extra=""):
-        return "tile_"+str(x)+"_"+str(y)+extra
+    def tile_label(self,x,y,extra=""):
+        "Generates BOTH label and bit flag prefixes for tiles"
+        return "tile_"+str(x)+"_"+str(y)+("_"+extra if extra!="" else "")
 
 
     def delay_code(self,cycles):
@@ -167,7 +295,7 @@ class Compiler:
 
         pass
 
-
+        #Remamber about the register substitution
 
 
 
