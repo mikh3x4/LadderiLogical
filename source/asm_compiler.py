@@ -85,6 +85,7 @@ class Node:
 
         flag_read_name=self.bit_reg["flag_"+self.save_file["subname"]]
 
+
         if(self.save_file['invert']==1):
             self.code.append(" BTFSS "+flag_read_name)
         else:
@@ -111,7 +112,9 @@ class Node:
 
         self.code.append(" BTFSC "+input_name)
 
+
         if(self.save_file['invert']==1):
+
             self.code.append(" BTFSS "+flag_read_name)
         else:
             self.code.append(" BTFSC "+flag_read_name)
