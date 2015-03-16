@@ -6,52 +6,53 @@ import tiles as tile_mod
 
 class Node:
 
-    def __init__(self,tile,x,y):
+    def __init__(self,board,tile,x,y):
 
         self.cycles=0
         self.info={}
 
-        
+        self.board=board
         self.info['coords']=[x,y]
         
 
-        if(type(tile)!=tile_mod.Flag and type(tile)!=tile_mod.Sequencer):
-            self.info['outputs']=[]
-            for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
-                if (ind!=None and check.get()==1):
 
-                    if (type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Relay
-                        and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
-                        self.info['outputs'].extend(self.parse_relays(self.board.tiles[ind[0]][ind[1]]))
+        self.info['outputs']=[]
 
-                    else:
-                        potencial_tile=self.parse_non_relay_conections(ind, check, direction)
-                        if(potencial_tile!=None):
-                            self.info['outputs'].append(potencial_tile)
+        for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
+            if (ind!=None and check.get()==1):
 
-            print(self.info)
+                if (type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Relay
+                    and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
+                    self.info['outputs'].extend(self.parse_relays(self.board.tiles[ind[0]][ind[1]]))
+
+                else:
+                    potencial_tile=self.parse_non_relay_conections(ind, check, direction)
+                    if(potencial_tile!=None):
+                        self.info['outputs'].append(potencial_tile)
+
+        
 
 
         self.info["save"]=tile.save_to_file()
 
+        print(self.info)
 
-
-def Source_generate(self):
-    pass
-def Flag_generate(self):
-    pass
-def Generator_generate(self):
-    pass
-def Switch_generate(self):
-    pass
-def Counter_generate(self):
-    pass
-def Pulsar_generate(self):
-    pass
-def Timer_generate(self):
-    pass
-def Sequencer_generate(self):
-    pass
+    def Source_generate(self):
+        pass
+    def Flag_generate(self):
+        pass
+    def Generator_generate(self):
+        pass
+    def Switch_generate(self):
+        pass
+    def Counter_generate(self):
+        pass
+    def Pulsar_generate(self):
+        pass
+    def Timer_generate(self):
+        pass
+    def Sequencer_generate(self):
+        pass
 
 
 
@@ -87,24 +88,8 @@ def Sequencer_generate(self):
 
     def parse_non_relay_conections(self,ind, check, direction):
 
-        if(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Flag
-            and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0):
 
-            return self.tile_coord_label(ind[0],ind[1],"con")
-
-
-        elif(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Switch
-            and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==2):
-
-            return self.tile_coord_label(ind[0],ind[1],"con")
-
-
-        elif(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Counter
-            and direction==3):
-
-            return self.tile_coord_label(ind[0],ind[1],"con")
-
-        elif(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Counter
+        if(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Counter
             and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
             and direction==2):
 
@@ -112,27 +97,18 @@ def Sequencer_generate(self):
 
 
         elif(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Timer
-            and direction==3):
-
-            return self.tile_coord_label(ind[0],ind[1],"con")
-
-        elif(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Timer
             and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
             and direction==2):
 
             return self.tile_coord_label(ind[0],ind[1],"reset")
 
-
-        elif(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Pulsar
-            and direction==3):
+        elif(self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==2):
 
             return self.tile_coord_label(ind[0],ind[1],"con")
 
 
-        elif(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Sequencer
-            and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0):
 
-            return self.tile_coord_label(ind[0],ind[1],"con")
+
 
         return None
 
@@ -143,7 +119,7 @@ def Sequencer_generate(self):
         pass
 
     def tile_coord_label(self,x,y,extra=""):
-        return "tile_"+str(x)+"_"+str(y)
+        return "tile_"+str(x)+"_"+str(y)+extra
 
 
     def delay_code(self,cycles):
@@ -182,7 +158,7 @@ class Compiler:
 
                 if(type(tile)!=tile_mod.Tile and type(tile)!=tile_mod.Relay):
 
-                    self.tiles_linear.append(Node(tile,x,y))
+                    self.tiles_linear.append(Node(self.board,tile,x,y))
 
 
 
