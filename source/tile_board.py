@@ -96,7 +96,9 @@ class TileBoard(ttk.Frame):
         "switch":Switch,"counter":Counter,"pulsar":Pulsar,"timer":Timer,"sequ":Sequencer}
         for x,col in enumerate(data['board']):
             for y,info in enumerate(col):
-                if(info!="blk"):
+                if(info=="blk"):
+                    self.convert_tile(x,y,Tile)
+                else:
                     print(info)
                     try:
                         self.convert_tile(x,y,tile_decode[info["0type"]])
