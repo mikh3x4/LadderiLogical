@@ -296,7 +296,23 @@ class Compiler:
 
     def get_code(self,ioinfo):
 
-        pass
+        self.register_names={}
+        register_base_name="bitflag_reg"
+        i=0
+        n=1
+        for tile in self.tiles_linear:
+            if(i==8):
+                i=0
+                n+=1
+            assert(i<8)
+
+            self.register_names[tile.get_bitflag_names()]=register_base_name+'_'+str(n)+","+str(i)
+            i+=1
+
+        for tile in self.tiles_linear:
+            tile.set_bit_flag_names(self.register_names)
+
+            
 
         #Remamber about the register substitution
 
