@@ -140,7 +140,7 @@ class Node:
     def Counter_generate(self):
         if(self.save_file['reset']==1):
             # auto_reset
-            up_tp=self.save_file['up_to']
+            up_to=self.save_file['up_to']
             edge=self.bit_reg[self.tile_label(self.x,self.y,"edge")]
             input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
             counter_register=self.tile_label(self.x,self.y,"counter")
@@ -370,7 +370,7 @@ class Compiler:
         "small_delay_4 return",
         "delay3_3 Nop",
         "delay3_2 Nop",
-        "delay3_1 Decfsz w,w",
-        "goto delay1_0",
-        "return"]
+        "delay3_1 Decfsz W,W",
+        " goto delay3_1",
+        " return"]
 
