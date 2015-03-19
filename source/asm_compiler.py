@@ -288,10 +288,11 @@ class Node:
 
 class Compiler:
 
-    def __init__(self,board):
+    def __init__(self,board,io):
 
         self.total_cycles=0
         self.board=board
+        self.io=io
 
         self.tiles_linear=[]
 
@@ -308,7 +309,7 @@ class Compiler:
 
         self.get_code()
 
-    def get_code(self,ioinfo=None):
+    def get_code(self):
 
         self.register_names={}
         register_base_name="bitflag_reg"
@@ -324,6 +325,20 @@ class Compiler:
 
                 self.register_names[bit]=register_base_name+'_'+str(n)+","+str(i)
                 i+=1
+
+        i=0
+        io_data=self.io.save_to_file()
+        for flag in io_data['inputs']:
+
+            self.register_names["flag_"+flag]="PORTA,"+str(i)
+            i+=1
+
+        i=0
+        for flag in io_data['outputs']:
+            #move to top to prevent blanch bitflags?
+            self.register_names["flag_"+flag]="PORTB,"+str(i)#overwriting
+            i+=1
+
 
         print(self.register_names)
 
@@ -359,9 +374,3 @@ class Compiler:
         "goto delay1_0",
         "return"]
 
-
-if __name__ == '__main__':
-    c=Compiler()
-
-    print(c.delay_code(11))
-    print(c.delay_footer())

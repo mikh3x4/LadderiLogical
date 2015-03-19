@@ -226,7 +226,7 @@ class ToolBox(ttk.Frame):
         self.flag.grid(row=0,column=5)
 
 
-        self.compile=ttk.Button(master=self,text="Compile Testing!",command=lambda:Compiler(self.app.board))
+        self.compile=ttk.Button(master=self,text="Compile Testing!",command=lambda:Compiler(self.app.board,self.app.io))
         self.compile.grid(row=0,column=6)
 
 
