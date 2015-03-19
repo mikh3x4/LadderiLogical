@@ -154,12 +154,12 @@ class Node:
             self.code.append(" goto "+self.tile_label(self.x,self.y,"no_act"))
 
             self.code.append(" INCF "+counter_register+",F")
-            self.code.append(" MOVLW d'"+up_to+"'")
-            self.code.append(" XORFW "+counter_register+",W")
+            self.code.append(" MOVLW d'"+str(up_to)+"'")
+            self.code.append(" XORWF "+counter_register+",W")
             self.code.append(" BTFSC STATUS,Z")
             self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
 
-            self.code.append("CLRF "+counter_register)
+            self.code.append(" CLRF "+counter_register)
             for out in self.outputs:
                 self.code.append(" BSF "+self.bit_reg[out])
             self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
@@ -172,10 +172,12 @@ class Node:
             self.code.extend(self.delay_code(len(self.outputs)+2))
 
             self.code.append(self.tile_label(self.x,self.y,"end"))
-            self.code.append(" BCF "+input_name)
+            
             self.code.append(" BCF "+edge)
             self.code.append(" BTFSC "+input_name)
             self.code.append(" BSF "+edge)
+
+            self.code.append(" BCF "+input_name)
 
 
 
