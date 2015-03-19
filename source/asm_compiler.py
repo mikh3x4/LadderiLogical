@@ -38,14 +38,14 @@ class Node:
         print(x,y,self.outputs,self.save_file)
 
     def get_bitflag_names(self):
-        out=[self.tile_label(ind[0],ind[1],"con")]
+        out=[self.tile_label(self.x,self.y,"con")]
 
         if(self.save_file['0type']=='timer'):
-            out.append(self.tile_label(ind[0],ind[1],"reset"))
+            out.append(self.tile_label(self.x,self.y,"reset"))
 
         elif(self.save_file['0type']=='counter'):
-            out.append(self.tile_label(ind[0],ind[1],"reset"))
-            out.append(self.tile_label(ind[0],ind[1],"edge"))
+            out.append(self.tile_label(self.x,self.y,"reset"))
+            out.append(self.tile_label(self.x,self.y,"edge"))
 
         elif(self.save_file['0type']=='flag'):
             out.append("flag_"+self.save_file["pubname"])
@@ -53,6 +53,8 @@ class Node:
 
         elif(self.save_file['0type']=='sequ'):
             out.extend(map(lambda x:"flag_"+x,self.save_file["steps"]))
+
+        return out
 
 
     def set_bit_flag_names(self,bit_reg):
@@ -62,7 +64,7 @@ class Node:
 
     def Source_generate(self):
         for out in self.outputs:
-            self.code.append(" BSF "+out)
+            self.code.append(" BSF "+self.bit_reg[out])
 
         self.cycles=len(self.outputs)
 
@@ -94,7 +96,7 @@ class Node:
         self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
 
         for out in self.outputs:
-            self.code.append(" BSF "+out)
+            self.code.append(" BSF "+self.bit_reg[out])
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
 
         self.code.append(self.tile_label(self.x,self.y,"skip"))
@@ -123,7 +125,7 @@ class Node:
         self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
 
         for out in self.outputs:
-            self.code.append(" BSF "+out)
+            self.code.append(" BSF "+self.bit_reg[out])
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
 
         self.code.append(self.tile_label(self.x,self.y,"skip"))
@@ -139,7 +141,7 @@ class Node:
         if(self.save_file['reset']==1):
             # auto_reset
             up_tp=self.save_file['up_to']
-            edge=self.tile_label(self.x,self.y,"edge")
+            edge=self.bit_reg[self.tile_label(self.x,self.y,"edge")]
             input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
             counter_register=self.tile_label(self.x,self.y,"counter")
 
@@ -159,7 +161,7 @@ class Node:
 
             self.code.append("CLRF "+counter_register)
             for out in self.outputs:
-                self.code.append(" BSF "+out)
+                self.code.append(" BSF "+self.bit_reg[out])
             self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
 
             self.code.append(self.tile_label(self.x,self.y,"no_act"))
@@ -181,23 +183,35 @@ class Node:
             return
         else:
             # manual_reset
-
-            return
+            print("not implemented")
+            
 
 
     def Pulsar_generate(self):
-        pass
+        print("not implemented")
     def Timer_generate(self):
-        pass
+        print("not implemented")
     def Sequencer_generate(self):
-        pass
+        print("not implemented")
 
 
 
 
-    def propose_code(self,total_cycles):
+    def propose_code(self,total_cycles=0):
         self.code=[]
-        pass
+        if(self.save_file['0type']=="flag"):
+            self.Flag_generate()
+        elif(self.save_file['0type']=="source"):
+            self.Source_generate()
+        elif(self.save_file['0type']=="generator"):
+            self.Generator_generate()
+        elif(self.save_file['0type']=="switch"):
+            self.Switch_generate()
+        elif(self.save_file['0type']=="counter"):
+            self.Counter_generate()
+        else:
+            print('Not implemented')
+
 
 
 
@@ -292,27 +306,44 @@ class Compiler:
                     self.tiles_linear.append(Node(self.board,tile,x,y))
 
 
+        self.get_code()
 
-
-    def get_code(self,ioinfo):
+    def get_code(self,ioinfo=None):
 
         self.register_names={}
         register_base_name="bitflag_reg"
         i=0
         n=1
         for tile in self.tiles_linear:
-            if(i==8):
-                i=0
-                n+=1
-            assert(i<8)
+            bits=tile.get_bitflag_names()
+            for bit in bits:
+                if(i==8):
+                    i=0
+                    n+=1
+                assert(i<8)
 
-            self.register_names[tile.get_bitflag_names()]=register_base_name+'_'+str(n)+","+str(i)
-            i+=1
+                self.register_names[bit]=register_base_name+'_'+str(n)+","+str(i)
+                i+=1
+
+        print(self.register_names)
 
         for tile in self.tiles_linear:
             tile.set_bit_flag_names(self.register_names)
+            tile.propose_code()
+
+        out=['main']
+        for tile in self.tiles_linear:
+            out.extend(tile.code)
+
+        out.append(' goto main')
+
+        out.extend(self.delay_footer())
+
+        print('\n'.join(out))
+
 
             
+
 
         #Remamber about the register substitution
 
