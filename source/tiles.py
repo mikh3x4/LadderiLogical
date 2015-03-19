@@ -533,7 +533,7 @@ class Switch(Tile):
         self.graphics=[self.missing_key,self.switch_box,self.top_box,self.bottom_box,self.left_box,self.right_box,self.on_box_top,self.on_box_bottom,self.on_box_rigth,self.on_box_left]
 
 
-        self.states=0
+        self.state=0
 
     def validate(self,S,d):
         if(d=="1" and S in self.forbiden_chars):
