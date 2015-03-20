@@ -17,8 +17,6 @@ class Node:
         self.x=x
         self.y=y
         
-
-
         self.outputs=[]
 
         for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
@@ -53,6 +51,19 @@ class Node:
 
         elif(self.save_file['0type']=='sequ'):
             out.extend(map(lambda x:"flag_"+x,self.save_file["steps"]))
+
+        return out
+
+    def get_register_names(self):
+        out=[]
+        if(self.save_file['0type']=='timer'):
+            # out.append(self.tile_label(self.x,self.y,"reset"))
+            pass
+
+        elif(self.save_file['0type']=='counter'):
+            out.append(self.tile_label(self.x,self.y,"counter"))
+
+
 
         return out
 
@@ -143,6 +154,7 @@ class Node:
             up_to=self.save_file['up_to']
             edge=self.bit_reg[self.tile_label(self.x,self.y,"edge")]
             input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+
             counter_register=self.tile_label(self.x,self.y,"counter")
 
             if(up_to>255):
@@ -156,7 +168,7 @@ class Node:
             self.code.append(" INCF "+counter_register+",F")
             self.code.append(" MOVLW d'"+str(up_to)+"'")
             self.code.append(" XORWF "+counter_register+",W")
-            self.code.append(" BTFSC STATUS,Z")
+            self.code.append(" BTFSS STATUS,Z")
             self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
 
             self.code.append(" CLRF "+counter_register)
@@ -295,6 +307,7 @@ class Compiler:
         self.total_cycles=0
         self.board=board
         self.io=io
+        self.registers=[]
 
         self.tiles_linear=[]
 
@@ -313,46 +326,75 @@ class Compiler:
 
     def get_code(self):
 
-        self.register_names={}
-        register_base_name="bitflag_reg"
+        self.bitflag_register_names={}
+        bitflag_base_name="bitflag_reg"
         i=0
         n=1
+        self.registers.append(bitflag_base_name+'_0')
         for tile in self.tiles_linear:
+            self.registers.extend(tile.get_register_names())
             bits=tile.get_bitflag_names()
             for bit in bits:
                 if(i==8):
                     i=0
                     n+=1
+                    self.registers.append(bitflag_base_name+'_'+str(n))
                 assert(i<8)
 
-                self.register_names[bit]=register_base_name+'_'+str(n)+","+str(i)
+                self.bitflag_register_names[bit]=bitflag_base_name+'_'+str(n)+","+str(i)
                 i+=1
 
         i=0
         io_data=self.io.save_to_file()
         for flag in io_data['inputs']:
 
-            self.register_names["flag_"+flag]="PORTA,"+str(i)
+            self.bitflag_register_names["flag_"+flag]="PORTA,"+str(i)
             i+=1
 
         i=0
         for flag in io_data['outputs']:
             #move to top to prevent blanch bitflags?
-            self.register_names["flag_"+flag]="PORTB,"+str(i)#overwriting
+            self.bitflag_register_names["flag_"+flag]="PORTB,"+str(i)#overwriting
             i+=1
 
 
-        print(self.register_names)
-
+        #get code proposals
         for tile in self.tiles_linear:
-            tile.set_bit_flag_names(self.register_names)
+            tile.set_bit_flag_names(self.bitflag_register_names)
             tile.propose_code()
 
-        out=['main']
+
+        #write code to out
+
+        out=[]        
+        human_readable_register_names={v: k for k, v in self.bitflag_register_names.items()}
+
+        for io_register in ("PORTA,"+str(i) for i in range(8)):
+            try:
+                out.append(';'+io_register+': '+human_readable_register_names[io_register])
+            except KeyError:
+                out.append(';'+io_register+':')
+            else:
+                del human_readable_register_names[io_register]
+
+        for io_register in ("PORTB,"+str(i) for i in range(8)):
+            try:
+                out.append(';'+io_register+': '+human_readable_register_names[io_register])
+            except KeyError:
+                out.append(';'+io_register+':')
+            else:
+                del human_readable_register_names[io_register]
+
+        human_readable_register_names={v: k for k, v in human_readable_register_names.items()}
+        for tiles_bitflags,other_registers in sorted(human_readable_register_names.items()):
+            out.append(';'+other_registers+': '+tiles_bitflags)
+
+        out.append('')
+        out.append('main')
         for tile in self.tiles_linear:
             out.extend(tile.code)
 
-        out.append(' goto main')
+        out.append(' goto main')#plus 2 to cycles
 
         out.extend(self.delay_footer())
 
