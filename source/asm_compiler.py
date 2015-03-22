@@ -254,49 +254,49 @@ class Node:
             elif(use_bytes==2):
                 assert(loops<256**2)
 
-input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+                input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
                 counter_register_hi=self.tile_label(self.x,self.y,"loop_counter_hi")
                 counter_register_lo=self.tile_label(self.x,self.y,"loop_counter_lo") 
 
-BTFSS input_state
-goto no_rest
+                # BTFSS input_state
+                # goto no_rest
 
-MOVLW time/total_cycles_lo
-MOVWF counter_lo
+                # MOVLW time/total_cycles_lo
+                # MOVWF counter_lo
 
-MOVLW time/total_cycles_hi
-MOVWF counter_hi
+                # MOVLW time/total_cycles_hi
+                # MOVWF counter_hi
 
-goto end_temp
+                # goto end_temp
 
-no_rest Delay 5
-end_temp
+                # no_rest Delay 5
+                # end_temp
 
-CLEAR W
-XORLW counter_lo,W
+                # CLEAR W
+                # XORLW counter_lo,W
 
-BTFSC STATUS,Z
-goto skip1
+                # BTFSC STATUS,Z
+                # goto skip1
 
-CLRF W
-XORLW counter_hi,W
+                # CLRF W
+                # XORLW counter_hi,W
 
-BTFSC STATUS,Z
-goto skip2
+                # BTFSC STATUS,Z
+                # goto skip2
 
-CLRF W
-XORWF counter_lo,W
-BTFSC STAUTS Z
-DECF counter_hi,F
-DECF counter_lo,F
+                # CLRF W
+                # XORWF counter_lo,W
+                # BTFSC STAUTS Z
+                # DECF counter_hi,F
+                # DECF counter_lo,F
 
-BSF output
-BSF outputs...
-goto end
-skip1 Delay 4
-skip2 Delay 6+n
+                # BSF output
+                # BSF outputs...
+                # goto end
+                # skip1 Delay 4
+                # skip2 Delay 6+n
 
-end BCF input_state
+                # end BCF input_state
 
                 self.cycles=len(self.outputs)+24
             else:
@@ -317,9 +317,6 @@ end BCF input_state
     def Sequencer_generate(self,total_cycles):
         print("not implemented")
 
-
-
-
     def propose_code(self,total_cycles=0):
         self.code=[]
 
@@ -337,9 +334,6 @@ end BCF input_state
             print('Not implemented')
             failed_to_compile=1
         return failed_to_compile
-
-
-
 
     def parse_relays(self,relay_example):
         i=relay_example.state_index
@@ -387,7 +381,6 @@ end BCF input_state
         "Generates BOTH label and bit flag prefixes for tiles"
         return "tile_"+str(x)+"_"+str(y)+("_"+extra if extra!="" else "")
 
-
     def delay_code(self,cycles):
 
         assert(type(cycles)==int)
@@ -406,6 +399,31 @@ end BCF input_state
         if(6<cycles):
             return [" MOVLW "+str(int(cycles/3)-2)," CALL delay3_"+str( 3 if cycles%3==0 else cycles%3)]
 
+
+
+class SourceNode(Node):
+    pass
+
+class FlagNode(Node):
+    pass
+
+class GeneratorNode(Node):
+    pass
+
+class SwitchNode(Node):
+    pass
+
+class CounterNode(Node):
+    pass
+
+class TimerNode(Node):
+    pass
+
+class PulsarNode(Node):
+    pass
+
+class SequencerNode(Node):
+    pass
 
 class Compiler:
 
