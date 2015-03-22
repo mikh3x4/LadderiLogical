@@ -73,13 +73,13 @@ class Node:
 
 
 
-    def Source_generate(self):
+    def Source_generate(self,total_cycles):
         for out in self.outputs:
             self.code.append(" BSF "+self.bit_reg[out])
 
         self.cycles=len(self.outputs)
 
-    def Flag_generate(self):
+    def Flag_generate(self,total_cycles):
 
         assert(self.outputs==[])
 
@@ -94,7 +94,7 @@ class Node:
         self.cycles=4
 
 
-    def Generator_generate(self):
+    def Generator_generate(self,total_cycles):
 
         flag_read_name=self.bit_reg["flag_"+self.save_file["subname"]]
 
@@ -118,7 +118,7 @@ class Node:
 
         self.cycles=len(self.outputs)+4
 
-    def Switch_generate(self):
+    def Switch_generate(self,total_cycles):
 
         flag_read_name=self.bit_reg["flag_"+self.save_file["subname"]]
         input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
@@ -148,7 +148,7 @@ class Node:
 
         self.cycles=len(self.outputs)+6
 
-    def Counter_generate(self):
+    def Counter_generate(self,total_cycles):
         if(self.save_file['reset']==1):
             # auto_reset
             up_to=self.save_file['up_to']
@@ -201,11 +201,11 @@ class Node:
             
 
 
-    def Pulsar_generate(self):
+    def Pulsar_generate(self,total_cycles):
         print("not implemented")
-    def Timer_generate(self):
+    def Timer_generate(self,total_cycles):
         print("not implemented")
-    def Sequencer_generate(self):
+    def Sequencer_generate(self,total_cycles):
         print("not implemented")
 
 
@@ -213,18 +213,21 @@ class Node:
 
     def propose_code(self,total_cycles=0):
         self.code=[]
+
         if(self.save_file['0type']=="flag"):
-            self.Flag_generate()
+            failed_to_compile=self.Flag_generate(total_cycles)
         elif(self.save_file['0type']=="source"):
-            self.Source_generate()
+            failed_to_compile=self.Source_generate(total_cycles)
         elif(self.save_file['0type']=="generator"):
-            self.Generator_generate()
+            failed_to_compile=self.Generator_generate(total_cycles)
         elif(self.save_file['0type']=="switch"):
-            self.Switch_generate()
+            failed_to_compile=self.Switch_generate(total_cycles)
         elif(self.save_file['0type']=="counter"):
-            self.Counter_generate()
+            failed_to_compile=self.Counter_generate(total_cycles)
         else:
             print('Not implemented')
+            failed_to_compile=1
+        return failed_to_compile
 
 
 
@@ -249,9 +252,6 @@ class Node:
 
         return out
 
-
-
-
     def parse_non_relay_conections(self,ind, check, direction):
 
 
@@ -273,8 +273,6 @@ class Node:
             return self.tile_label(ind[0],ind[1],"con")
 
         return None
-
-
 
     def tile_label(self,x,y,extra=""):
         "Generates BOTH label and bit flag prefixes for tiles"
@@ -311,9 +309,6 @@ class Compiler:
 
         self.tiles_linear=[]
 
-
-
-
         for x,col in enumerate(self.board.tiles):
             for y,tile in enumerate(col):
 
@@ -328,6 +323,14 @@ class Compiler:
 
         self.bitflag_register_names={}
         bitflag_base_name="bitflag_reg"
+
+        io_data=self.io.save_to_file()
+        i=0
+        for flag in io_data['outputs']:
+            #move to top to prevent blanch bitflags?
+            self.bitflag_register_names["flag_"+flag]="PORTB,"+str(i)#overwriting
+            i+=1
+
         i=0
         n=1
         self.registers.append(bitflag_base_name+'_0')
@@ -341,32 +344,38 @@ class Compiler:
                     self.registers.append(bitflag_base_name+'_'+str(n))
                 assert(i<8)
 
-                self.bitflag_register_names[bit]=bitflag_base_name+'_'+str(n)+","+str(i)
-                i+=1
+                try:
+                    self.bitflag_register_names[bit]
+                except KeyError:
+                    self.bitflag_register_names[bit]=bitflag_base_name+'_'+str(n)+","+str(i)
+                    i+=1
 
         i=0
-        io_data=self.io.save_to_file()
         for flag in io_data['inputs']:
-
             self.bitflag_register_names["flag_"+flag]="PORTA,"+str(i)
             i+=1
 
-        i=0
-        for flag in io_data['outputs']:
-            #move to top to prevent blanch bitflags?
-            self.bitflag_register_names["flag_"+flag]="PORTB,"+str(i)#overwriting
-            i+=1
+
 
 
         #get code proposals
-        for tile in self.tiles_linear:
-            tile.set_bit_flag_names(self.bitflag_register_names)
-            tile.propose_code()
+        not_accepted=True
+        while (not_accepted):
+            proposal=[]
+            for tile in self.tiles_linear:
+                tile.set_bit_flag_names(self.bitflag_register_names)
+                proposal.append(tile.propose_code())
+
+            if( not any(proposals)):
+                not_accepted=False
 
 
         #write code to out
 
-        out=[]        
+        out=[]
+
+
+
         human_readable_register_names={v: k for k, v in self.bitflag_register_names.items()}
 
         for io_register in ("PORTA,"+str(i) for i in range(8)):
@@ -389,6 +398,9 @@ class Compiler:
         for tiles_bitflags,other_registers in sorted(human_readable_register_names.items()):
             out.append(';'+other_registers+': '+tiles_bitflags)
 
+
+
+
         out.append('')
         out.append('main')
         for tile in self.tiles_linear:
@@ -401,10 +413,7 @@ class Compiler:
         print('\n'.join(out))
 
 
-            
-
-
-        #Remamber about the register substitution
+        
 
 
 

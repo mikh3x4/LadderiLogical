@@ -8,10 +8,71 @@ hold timer (single byte)
 hold timer (double byte)
 counter auto reset
 counter manual reset
+pulsar (single byte)
 
 
 cycle=number of cycles for node
 n=number of output nodes
+
+
+
+sequencer:####not worlgin
+
+BTFSS prev_edge
+BTFSS input_state
+goto no_inc
+
+INCF sequncer_step,F
+MOVLW max_step
+XORFW sequncer_step,W
+BTFSC STATUS,Z
+CLRF sequncer_step
+
+no_inc Delay
+
+
+end BCF input_state
+BCF prev_edge
+BTFSC input_state
+BSF prev_edge
+
+
+
+pulsar: (single byte)(cycle=13+n)
+
+
+BTFSS input_state
+goto no_act
+
+INCF pular_counter,F
+
+MOVLW up_to
+XORFW pular_counter,W
+BTFSS STATUS,Z
+goto just_inc
+
+CLRF pular_counter
+
+BTFSS state_flag
+goto off
+
+BSF output_states...
+BSF output_states...
+BSF output_states...
+BSF output_states...
+
+goto end
+
+no_act CLRF pular_counter
+BCF state_flag
+delay 3
+
+just_inc delay 3
+off delay 1+n
+end BCF input_state
+
+
+
 
 hold timer: (double byte) (cycle=n+24)
 
