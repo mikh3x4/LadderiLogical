@@ -6,12 +6,12 @@ import tiles as tile_mod
 
 class Node:
 
-    def __init__(self,board,tile,x,y):
-
+    def __init__(self,board,tile,x,y,proc_speed):
+        self.proc_speed=proc_speed
         self.cycles=0
         self.code=[]
 
-
+        self.previous_total_cycles=-1
         self.board=board
 
         self.x=x
@@ -57,7 +57,7 @@ class Node:
     def get_register_names(self):
         out=[]
         if(self.save_file['0type']=='timer'):
-            # out.append(self.tile_label(self.x,self.y,"reset"))
+            out.append(self.tile_label(self.x,self.y,"loop_counter"))
             pass
 
         elif(self.save_file['0type']=='counter'):
@@ -199,12 +199,121 @@ class Node:
             # manual_reset
             print("not implemented")
             
+    def Timer_generate(self,total_cycles):
 
+        if(self.previous_total_cycles==total_cycles):
+            return
+
+        self.previous_total_cycles=total_cycles
+        
+
+        if(self.save_file['mode']==1):
+            use_bytes=0
+            for byte_number,cycl in zip(range(1,2),[len(self.outputs)+14,len(self.outputs)+24]):
+                loops=self.save_file['time_to']/((total_cycles-self.cycles+cycl)/self.proc_speed)
+                if(loops<2**byte_number-1):
+                    use_bytes=byte_number
+                    break
+            else:
+                #for loop else
+                print('timer too big for implemented register nubmers')
+                raise UserWarning
+
+
+            if(use_bytes==1):
+                assert(loops<256)
+
+                
+                input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+                counter_register=self.tile_label(self.x,self.y,"loop_counter")  
+
+                self.code.append(" BTFSS "+input_name)
+                self.code.append(" goto "+self.tile_label(self.x,self.y,"no_rest"))
+                self.code.append(" MOVLW d'"+str(loops)+"'")
+                self.code.append(" MOVWF "+counter_register)
+                self.code.append(" goto "+self.tile_label(self.x,self.y,"end_temp"))
+
+                self.code.append(self.tile_label(self.x,self.y,"no_rest"))
+                self.code.append([' NOP']*3)
+                self.code.append(self.tile_label(self.x,self.y,"end_temp"))
+
+                self.code.append(" CLRF W")
+                self.code.append(" XORLW "+counter_register+",W")
+                self.code.append(" BTFSC STATUS,Z")
+                self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
+                self.code.append(" DECF "+counter_register+",F")
+                for out in self.outputs:
+                    self.code.append(" BSF "+self.bit_reg[out])
+                self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+                self.code.append(self.tile_label(self.x,self.y,"skip"))
+                self.code.extend(self.delay_code(len(self.outputs)+2))
+                self.code.append(self.tile_label(self.x,self.y,"end"))
+                self.code.append(" BCF "+input_name)
+
+                self.cycles=len(self.outputs)+14
+            elif(use_bytes==2):
+                assert(loops<256**2)
+
+input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+                counter_register_hi=self.tile_label(self.x,self.y,"loop_counter_hi")
+                counter_register_lo=self.tile_label(self.x,self.y,"loop_counter_lo") 
+
+BTFSS input_state
+goto no_rest
+
+MOVLW time/total_cycles_lo
+MOVWF counter_lo
+
+MOVLW time/total_cycles_hi
+MOVWF counter_hi
+
+goto end_temp
+
+no_rest Delay 5
+end_temp
+
+CLEAR W
+XORLW counter_lo,W
+
+BTFSC STATUS,Z
+goto skip1
+
+CLRF W
+XORLW counter_hi,W
+
+BTFSC STATUS,Z
+goto skip2
+
+CLRF W
+XORWF counter_lo,W
+BTFSC STAUTS Z
+DECF counter_hi,F
+DECF counter_lo,F
+
+BSF output
+BSF outputs...
+goto end
+skip1 Delay 4
+skip2 Delay 6+n
+
+end BCF input_state
+
+                self.cycles=len(self.outputs)+24
+            else:
+                print('unexpected error')
+                raise
+
+        elif(self.save_file['mode']==2):
+            use_bytes=0
+
+        elif(self.save_file['mode']==3):
+            use_bytes=0
+
+        return 1
 
     def Pulsar_generate(self,total_cycles):
         print("not implemented")
-    def Timer_generate(self,total_cycles):
-        print("not implemented")
+
     def Sequencer_generate(self,total_cycles):
         print("not implemented")
 
@@ -301,7 +410,7 @@ class Node:
 class Compiler:
 
     def __init__(self,board,io):
-
+        self.proc_speed=4*10**6
         self.total_cycles=0
         self.board=board
         self.io=io
@@ -314,7 +423,7 @@ class Compiler:
 
                 if(type(tile)!=tile_mod.Tile and type(tile)!=tile_mod.Relay):
 
-                    self.tiles_linear.append(Node(self.board,tile,x,y))
+                    self.tiles_linear.append(Node(self.board,tile,x,y,self.proc_speed))
 
 
         self.get_code()
@@ -355,16 +464,15 @@ class Compiler:
             self.bitflag_register_names["flag_"+flag]="PORTA,"+str(i)
             i+=1
 
-
-
+        for tile in self.tiles_linear:
+            tile.set_bit_flag_names(self.bitflag_register_names)
 
         #get code proposals
         not_accepted=True
         while (not_accepted):
             proposal=[]
             for tile in self.tiles_linear:
-                tile.set_bit_flag_names(self.bitflag_register_names)
-                proposal.append(tile.propose_code())
+                proposal.append(tile.propose_code(total_cycles=sum([x.cycles for x in self.tiles_linear])))
 
             if( not any(proposals)):
                 not_accepted=False
