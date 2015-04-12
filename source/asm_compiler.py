@@ -1,17 +1,12 @@
-
-# from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter,Pulsar,Timer,Sequencer
-
-import tiles as tile_mod
+import tiles as tiles_mod
 
 
 class Node:
 
     def __init__(self,board,tile,x,y,proc_speed):
         self.proc_speed=proc_speed
-        self.cycles=0
         self.code=[]
 
-        self.previous_total_cycles=-1
         self.board=board
 
         self.x=x
@@ -22,7 +17,7 @@ class Node:
         for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
             if (ind!=None and check.get()==1):
 
-                if (type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Relay
+                if (type(self.board.tiles[ind[0]][ind[1]])==tiles_mod.Relay
                     and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==1):
                     self.outputs.extend(self.parse_relays(self.board.tiles[ind[0]][ind[1]]))
 
@@ -38,32 +33,10 @@ class Node:
     def get_bitflag_names(self):
         out=[self.tile_label(self.x,self.y,"con")]
 
-        if(self.save_file['0type']=='timer'):
-            out.append(self.tile_label(self.x,self.y,"reset"))
-
-        elif(self.save_file['0type']=='counter'):
-            out.append(self.tile_label(self.x,self.y,"reset"))
-            out.append(self.tile_label(self.x,self.y,"edge"))
-
-        elif(self.save_file['0type']=='flag'):
-            out.append("flag_"+self.save_file["pubname"])
-
-
-        elif(self.save_file['0type']=='sequ'):
-            out.extend(map(lambda x:"flag_"+x,self.save_file["steps"]))
-
         return out
 
     def get_register_names(self):
         out=[]
-        if(self.save_file['0type']=='timer'):
-            out.append(self.tile_label(self.x,self.y,"loop_counter"))
-            pass
-
-        elif(self.save_file['0type']=='counter'):
-            out.append(self.tile_label(self.x,self.y,"counter"))
-
-
 
         return out
 
@@ -72,14 +45,101 @@ class Node:
         self.bit_reg=bit_reg
 
 
+    def parse_relays(self,relay_example):
+        i=relay_example.state_index
 
-    def Source_generate(self,total_cycles):
+        out=[]
+        for tile in self.board.relay_groups[i]:
+
+            for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
+
+
+                if(ind!=None and check.get()==1
+                    and type(self.board.tiles[ind[0]][ind[1]])!=tiles_mod.Tile 
+                    and type(self.board.tiles[ind[0]][ind[1]])!=tiles_mod.Relay):
+
+
+                    potencial_tile=self.parse_non_relay_conections(ind, check, direction)
+                    if(potencial_tile!=None):
+                        out.append(potencial_tile)
+
+        return out
+
+    def parse_non_relay_conections(self,ind, check, direction):
+
+
+        if(type(self.board.tiles[ind[0]][ind[1]])==tiles_mod.Counter
+            and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
+            and direction==2):
+
+            return self.tile_label(ind[0],ind[1],"reset")
+
+
+        elif(type(self.board.tiles[ind[0]][ind[1]])==tiles_mod.Timer
+            and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
+            and direction==2):
+
+            return self.tile_label(ind[0],ind[1],"reset")
+
+        elif(self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==2):
+
+            return self.tile_label(ind[0],ind[1],"con")
+
+        return None
+
+    def tile_label(self,x,y,extra=""):
+        "Generates BOTH label and bit flag prefixes for tiles"
+        return "tile_"+str(x)+"_"+str(y)+("_"+extra if extra!="" else "")
+
+    def delay_code(self,cycles):
+
+        assert(type(cycles)==int)
+        if(cycles==0):
+            return [""]
+
+        if(0<cycles<4):
+            return [" NOP"]*cycles
+
+        if(3<cycles<7):
+            return [" CALL small_delay_"+str(cycles)]
+
+        if(int(cycles/3)-2>255):
+            raise OverflowError
+
+        if(6<cycles):
+            return [" MOVLW "+str(int(cycles/3)-2)," CALL delay3_"+str( 3 if cycles%3==0 else cycles%3)]
+
+class SourceNode(Node):
+
+    def get_minimum_cycles(self):
+        return len(self.outputs)
+
+    def adjust_cycles(self,proposed_total_cycles):
+        return len(self.outputs)
+
+
+
+    def generate_code(self,total_cycles):
         for out in self.outputs:
             self.code.append(" BSF "+self.bit_reg[out])
 
         self.cycles=len(self.outputs)
 
-    def Flag_generate(self,total_cycles):
+class FlagNode(Node):
+
+    def get_minimum_cycles(self):
+        return 4
+
+    def adjust_cycles(self,proposed_total_cycles):
+        return 4
+
+    def get_bitflag_names(self):
+        out=[self.tile_label(self.x,self.y,"con")]
+        out.append("flag_"+self.save_file["pubname"])
+
+        return out
+
+    def generate_code(self,total_cycles):
 
         assert(self.outputs==[])
 
@@ -93,8 +153,15 @@ class Node:
 
         self.cycles=4
 
+class GeneratorNode(Node):
 
-    def Generator_generate(self,total_cycles):
+    def get_minimum_cycles(self):
+        return len(self.outputs)+4
+
+    def adjust_cycles(self,proposed_total_cycles):
+        return len(self.outputs)+4
+
+    def generate_code(self,total_cycles):
 
         flag_read_name=self.bit_reg["flag_"+self.save_file["subname"]]
 
@@ -118,7 +185,15 @@ class Node:
 
         self.cycles=len(self.outputs)+4
 
-    def Switch_generate(self,total_cycles):
+class SwitchNode(Node):
+
+    def get_minimum_cycles(self):
+        return len(self.outputs)+6
+
+    def adjust_cycles(self,proposed_total_cycles):
+        return len(self.outputs)+6
+
+    def generate_code(self,total_cycles):
 
         flag_read_name=self.bit_reg["flag_"+self.save_file["subname"]]
         input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
@@ -148,7 +223,29 @@ class Node:
 
         self.cycles=len(self.outputs)+6
 
-    def Counter_generate(self,total_cycles):
+class CounterNode(Node):
+
+    def get_bitflag_names(self):
+        out=[self.tile_label(self.x,self.y,"con")]
+        out.append(self.tile_label(self.x,self.y,"reset"))
+        out.append(self.tile_label(self.x,self.y,"edge"))
+
+        return out
+
+    def get_minimum_cycles(self):
+        pass
+
+    def adjust_cycles(self,proposed_total_cycles):
+        pass
+
+    def get_register_names(self):
+        out=[]
+        out.append(self.tile_label(self.x,self.y,"counter"))
+         #more registers in multi byte case
+
+        return out
+
+    def generate_code(self,total_cycles):
         if(self.save_file['reset']==1):
             # auto_reset
             up_to=self.save_file['up_to']
@@ -198,8 +295,29 @@ class Node:
         else:
             # manual_reset
             print("not implemented")
-            
-    def Timer_generate(self,total_cycles):
+
+class TimerNode(Node):
+
+    def get_minimum_cycles(self):
+        pass
+
+    def adjust_cycles(self,proposed_total_cycles):
+        pass
+
+    def get_bitflag_names(self):
+        out=[self.tile_label(self.x,self.y,"con")]
+        out.append(self.tile_label(self.x,self.y,"reset"))
+
+        return out
+
+    def get_register_names(self):
+        out=[]
+        out.append(self.tile_label(self.x,self.y,"loop_counter"))
+        #more registers in multi byte case
+
+        return out
+
+    def generate_code(self,total_cycles):
 
         if(self.previous_total_cycles==total_cycles):
             return
@@ -311,123 +429,47 @@ class Node:
 
         return 1
 
-    def Pulsar_generate(self,total_cycles):
+class PulsarNode(Node):
+
+    def get_minimum_cycles(self):
+        pass
+
+    def adjust_cycles(self,proposed_total_cycles):
+        pass
+
+    def generate_code(self,total_cycles):
         print("not implemented")
 
-    def Sequencer_generate(self,total_cycles):
-        print("not implemented")
+class SequencerNode(Node):
 
-    def propose_code(self,total_cycles=0):
-        self.code=[]
+    def get_minimum_cycles(self):
+        pass
 
-        if(self.save_file['0type']=="flag"):
-            failed_to_compile=self.Flag_generate(total_cycles)
-        elif(self.save_file['0type']=="source"):
-            failed_to_compile=self.Source_generate(total_cycles)
-        elif(self.save_file['0type']=="generator"):
-            failed_to_compile=self.Generator_generate(total_cycles)
-        elif(self.save_file['0type']=="switch"):
-            failed_to_compile=self.Switch_generate(total_cycles)
-        elif(self.save_file['0type']=="counter"):
-            failed_to_compile=self.Counter_generate(total_cycles)
-        else:
-            print('Not implemented')
-            failed_to_compile=1
-        return failed_to_compile
+    def adjust_cycles(self,proposed_total_cycles):
+        pass
 
-    def parse_relays(self,relay_example):
-        i=relay_example.state_index
-
-        out=[]
-        for tile in self.board.relay_groups[i]:
-
-            for ind, check, direction in zip(tile.adj_ind,tile.conector_checks,[2,3,0,1]):
-
-
-                if(ind!=None and check.get()==1
-                    and type(self.board.tiles[ind[0]][ind[1]])!=tile_mod.Tile 
-                    and type(self.board.tiles[ind[0]][ind[1]])!=tile_mod.Relay):
-
-
-                    potencial_tile=self.parse_non_relay_conections(ind, check, direction)
-                    if(potencial_tile!=None):
-                        out.append(potencial_tile)
+    def get_bitflag_names(self):
+        out=[self.tile_label(self.x,self.y,"con")]
+        out.extend(map(lambda x:"flag_"+x,self.save_file["steps"]))
 
         return out
 
-    def parse_non_relay_conections(self,ind, check, direction):
-
-
-        if(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Counter
-            and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
-            and direction==2):
-
-            return self.tile_label(ind[0],ind[1],"reset")
-
-
-        elif(type(self.board.tiles[ind[0]][ind[1]])==tile_mod.Timer
-            and self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()!=0
-            and direction==2):
-
-            return self.tile_label(ind[0],ind[1],"reset")
-
-        elif(self.board.tiles[ind[0]][ind[1]].conector_checks[direction].get()==2):
-
-            return self.tile_label(ind[0],ind[1],"con")
-
-        return None
-
-    def tile_label(self,x,y,extra=""):
-        "Generates BOTH label and bit flag prefixes for tiles"
-        return "tile_"+str(x)+"_"+str(y)+("_"+extra if extra!="" else "")
-
-    def delay_code(self,cycles):
-
-        assert(type(cycles)==int)
-        if(cycles==0):
-            return [""]
-
-        if(0<cycles<4):
-            return [" NOP"]*cycles
-
-        if(3<cycles<7):
-            return [" CALL small_delay_"+str(cycles)]
-
-        if(int(cycles/3)-2>255):
-            raise OverflowError
-
-        if(6<cycles):
-            return [" MOVLW "+str(int(cycles/3)-2)," CALL delay3_"+str( 3 if cycles%3==0 else cycles%3)]
-
-
-
-class SourceNode(Node):
-    pass
-
-class FlagNode(Node):
-    pass
-
-class GeneratorNode(Node):
-    pass
-
-class SwitchNode(Node):
-    pass
-
-class CounterNode(Node):
-    pass
-
-class TimerNode(Node):
-    pass
-
-class PulsarNode(Node):
-    pass
-
-class SequencerNode(Node):
-    pass
+    def generate_code(self,total_cycles):
+        print("not implemented")
 
 class Compiler:
 
     def __init__(self,board,io):
+
+        self.Tile_Node_Links={tiles_mod.Source: SourceNode,
+                            tiles_mod.Flag: FlagNode,
+                            tiles_mod.Generator: GeneratorNode,
+                            tiles_mod.Switch: SwitchNode,
+                            tiles_mod.Counter: CounterNode,
+                            tiles_mod.Pulsar: TimerNode,
+                            tiles_mod.Timer: PulsarNode,
+                            tiles_mod.Sequencer: SequencerNode}
+
         self.proc_speed=4*10**6
         self.total_cycles=0
         self.board=board
@@ -436,12 +478,13 @@ class Compiler:
 
         self.tiles_linear=[]
 
+
         for x,col in enumerate(self.board.tiles):
             for y,tile in enumerate(col):
 
-                if(type(tile)!=tile_mod.Tile and type(tile)!=tile_mod.Relay):
+                if(type(tile)!=tiles_mod.Tile and type(tile)!=tiles_mod.Relay):
 
-                    self.tiles_linear.append(Node(self.board,tile,x,y,self.proc_speed))
+                    self.tiles_linear.append(self.Tile_Node_Links[type(tile)](self.board,tile,x,y,self.proc_speed))
 
 
         self.get_code()
@@ -485,22 +528,19 @@ class Compiler:
         for tile in self.tiles_linear:
             tile.set_bit_flag_names(self.bitflag_register_names)
 
-        #get code proposals
-        not_accepted=True
-        while (not_accepted):
-            proposal=[]
-            for tile in self.tiles_linear:
-                proposal.append(tile.propose_code(total_cycles=sum([x.cycles for x in self.tiles_linear])))
+        
+        #move before register to register multi byte timers
+        proposed_total_cycles=sum(tile.get_minimum_cycles() for tile in self.tiles_linear)+2 #plus two due to main loop, fix multiout
+        total_cycles=sum(tile.adjust_cycles(proposed_total_cycles) for tile in self.tiles_linear)+2 #plus two due to main loop, fix multiout
 
-            if( not any(proposals)):
-                not_accepted=False
 
+        for tile in self.tiles_linear:
+            tile.generate_code(total_cycles)
 
         #write code to out
-
         out=[]
-
-
+        out.append(';Code generated by LadderiLogical')
+        out.append('')
 
         human_readable_register_names={v: k for k, v in self.bitflag_register_names.items()}
 
@@ -525,22 +565,20 @@ class Compiler:
             out.append(';'+other_registers+': '+tiles_bitflags)
 
 
-
-
         out.append('')
         out.append('main')
         for tile in self.tiles_linear:
             out.extend(tile.code)
 
+        #fix outputs on multyple pins remember about time fixing
+
         out.append(' goto main')#plus 2 to cycles
 
         out.extend(self.delay_footer())
 
+        out.append(' END')
+
         print('\n'.join(out))
-
-
-        
-
 
 
     def delay_footer(self):
