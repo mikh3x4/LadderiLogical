@@ -225,7 +225,7 @@ class CounterNode(Node):
         out.append(self.tile_label(self.x,self.y,"reset"))
         out.append(self.tile_label(self.x,self.y,"edge"))
 
-        if(self.save_file['reset']==0)):
+        if(self.save_file['reset']==0):
             out.append(self.tile_label(self.x,self.y,"reset"))
 
         return out
@@ -254,12 +254,12 @@ class CounterNode(Node):
 
         if(self.save_file['reset']==1):
             self.generate_code_autoreset_sub255(total_cycles)
-        elif(self.save_file['reset']==0)):
+        elif(self.save_file['reset']==0):
             self.generate_code_manualreset_sub255(total_cycles)
         else:
             print("unimplmented counter configuration")
 
-def generate_code_manualreset_sub255(self,total_cycles):
+    def generate_code_manualreset_sub255(self,total_cycles):
 
 
         up_to=self.save_file['up_to']
@@ -362,9 +362,9 @@ class TimerNode(Node):
         if(self.save_file['mode']==1):
             #hold config
             if(self.loops_proposed<255):
-                return return len(self.outputs)+14
+                return len(self.outputs)+14
             if(self.loops_proposed<65535):
-                return return len(self.outputs)+24
+                return len(self.outputs)+24
             else:
                 print("timer overflows two bytes")
 
@@ -473,7 +473,7 @@ class TimerNode(Node):
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end_temp"))
 
         self.code.append(self.tile_label(self.x,self.y,"no_rest"))
-        self.code.extend(self.delay_code(5)
+        self.code.extend(self.delay_code(5))
         self.code.append(self.tile_label(self.x,self.y,"end_temp"))
 
         self.code.append(" CLRF W")
@@ -499,7 +499,7 @@ class TimerNode(Node):
 
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
         self.code.append(self.tile_label(self.x,self.y,"skip1"))
-        self.code.extend(self.delay_code(4)
+        self.code.extend(self.delay_code(4))
         self.code.append(self.tile_label(self.x,self.y,"skip2"))
         self.code.extend(self.delay_code(len(self.outputs)+6))
 
