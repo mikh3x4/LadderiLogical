@@ -123,7 +123,6 @@ class SourceNode(Node):
         for out in self.outputs:
             self.code.append(" BSF "+self.bit_reg[out])
 
-        self.cycles=len(self.outputs)
 
 class FlagNode(Node):
 
@@ -151,7 +150,6 @@ class FlagNode(Node):
         self.code.append(" BSF "+flag_name)
         self.code.append(" BCF "+input_name)
 
-        self.cycles=4
 
 class GeneratorNode(Node):
 
@@ -182,8 +180,6 @@ class GeneratorNode(Node):
 
         self.code.append(self.tile_label(self.x,self.y,"end"))
 
-
-        self.cycles=len(self.outputs)+4
 
 class SwitchNode(Node):
 
@@ -221,7 +217,6 @@ class SwitchNode(Node):
         self.code.append(" BCF "+input_name)
 
 
-        self.cycles=len(self.outputs)+6
 
 class CounterNode(Node):
 
@@ -230,13 +225,18 @@ class CounterNode(Node):
         out.append(self.tile_label(self.x,self.y,"reset"))
         out.append(self.tile_label(self.x,self.y,"edge"))
 
+        if(self.save_file['reset']==0)):
+            out.append(self.tile_label(self.x,self.y,"reset"))
+
         return out
 
     def get_minimum_cycles(self):
-        pass
+        return len(self.outputs)+15
+        #multibyte
 
     def adjust_cycles(self,proposed_total_cycles):
-        pass
+        return len(self.outputs)+15
+        #multibyte
 
     def get_register_names(self):
         out=[]
@@ -246,188 +246,267 @@ class CounterNode(Node):
         return out
 
     def generate_code(self,total_cycles):
+
+        if(self.save_file['up_to']>255):
+            print('counter too big for single register')
+            raise UserWarning
+
+
         if(self.save_file['reset']==1):
-            # auto_reset
-            up_to=self.save_file['up_to']
-            edge=self.bit_reg[self.tile_label(self.x,self.y,"edge")]
-            input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
-
-            counter_register=self.tile_label(self.x,self.y,"counter")
-
-            if(up_to>255):
-                print('counter too big for single register')
-                raise UserWarning
-
-            self.code.append(" BTFSS "+edge)
-            self.code.append(" BTFSS "+input_name)
-            self.code.append(" goto "+self.tile_label(self.x,self.y,"no_act"))
-
-            self.code.append(" INCF "+counter_register+",F")
-            self.code.append(" MOVLW d'"+str(up_to)+"'")
-            self.code.append(" XORWF "+counter_register+",W")
-            self.code.append(" BTFSS STATUS,Z")
-            self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
-
-            self.code.append(" CLRF "+counter_register)
-            for out in self.outputs:
-                self.code.append(" BSF "+self.bit_reg[out])
-            self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
-
-            self.code.append(self.tile_label(self.x,self.y,"no_act"))
-            self.code.extend(self.delay_code(len(self.outputs)+5))
-            self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
-
-            self.code.append(self.tile_label(self.x,self.y,"skip"))
-            self.code.extend(self.delay_code(len(self.outputs)+2))
-
-            self.code.append(self.tile_label(self.x,self.y,"end"))
-            
-            self.code.append(" BCF "+edge)
-            self.code.append(" BTFSC "+input_name)
-            self.code.append(" BSF "+edge)
-
-            self.code.append(" BCF "+input_name)
-
-
-
-            self.cycles=len(self.outputs)+15
-            return
+            self.generate_code_autoreset_sub255(total_cycles)
+        elif(self.save_file['reset']==0)):
+            self.generate_code_manualreset_sub255(total_cycles)
         else:
-            # manual_reset
-            print("not implemented")
+            print("unimplmented counter configuration")
+
+def generate_code_manualreset_sub255(self,total_cycles):
+
+
+        up_to=self.save_file['up_to']
+        edge=self.bit_reg[self.tile_label(self.x,self.y,"edge")]
+        input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+
+        reset_name=self.bit_reg[self.tile_label(self.x,self.y,"reset")]
+
+        counter_register=self.tile_label(self.x,self.y,"counter")
+
+        self.code.append(" BTFSC "+reset_name)
+        self.code.append(" CLRF "+counter_register)
+
+        self.code.append(" BTFSS "+edge)
+        self.code.append(" BTFSS "+input_name)
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"no_act"))
+
+        self.code.append(" MOVLW d'"+str(up_to)+"'")
+        self.code.append(" XORWF "+counter_register+",W")
+        self.code.append(" BTFSS STATUS,Z")
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"increment"))
+
+        for out in self.outputs:
+            self.code.append(" BSF "+self.bit_reg[out])
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+
+        self.code.extend(self.delay_code(len(self.outputs)+3))
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+
+
+        self.code.append(self.tile_label(self.x,self.y,"increment"))
+        self.code.append(" INCF "+counter_register+",F")
+
+
+        self.code.append(self.tile_label(self.x,self.y,"end"))
+        self.code.append(" BCF "+input_name)
+        self.code.append(" BCF "+edge)
+        self.code.append(" BTFSC "+input_name)
+        self.code.append(" BSF "+edge)
+
+    def generate_code_autoreset_sub255(self,total_cycles):
+
+        up_to=self.save_file['up_to']
+        edge=self.bit_reg[self.tile_label(self.x,self.y,"edge")]
+        input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+
+        counter_register=self.tile_label(self.x,self.y,"counter")
+
+
+        self.code.append(" BTFSS "+edge)
+        self.code.append(" BTFSS "+input_name)
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"no_act"))
+
+        self.code.append(" INCF "+counter_register+",F")
+        self.code.append(" MOVLW d'"+str(up_to)+"'")
+        self.code.append(" XORWF "+counter_register+",W")
+        self.code.append(" BTFSS STATUS,Z")
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
+
+        self.code.append(" CLRF "+counter_register)
+        for out in self.outputs:
+            self.code.append(" BSF "+self.bit_reg[out])
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+
+        self.code.append(self.tile_label(self.x,self.y,"no_act"))
+        self.code.extend(self.delay_code(len(self.outputs)+5))
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+
+        self.code.append(self.tile_label(self.x,self.y,"skip"))
+        self.code.extend(self.delay_code(len(self.outputs)+2))
+
+        self.code.append(self.tile_label(self.x,self.y,"end"))
+        
+        self.code.append(" BCF "+edge)
+        self.code.append(" BTFSC "+input_name)
+        self.code.append(" BSF "+edge)
+
+        self.code.append(" BCF "+input_name)
+
 
 class TimerNode(Node):
 
     def get_minimum_cycles(self):
-        pass
+        if(self.save_file['mode']==1):
+            #hold 
+            return len(self.outputs)+14
+        elif(self.save_file['mode']==2):
+            #delay monostable
+            print("unimplmented timer (delay monostable) configuration")
+        elif(self.save_file['mode']==3):
+            #manual
+            print("unimplmented timer (manual) configuration")
+        else:
+            print("unimplmented timer configuration")
 
     def adjust_cycles(self,proposed_total_cycles):
-        pass
+
+        self.loops_proposed=(self.save_file['time_to']/1000)/((proposed_total_cycles)/self.proc_speed)
+
+        if(self.save_file['mode']==1):
+            #hold config
+            if(self.loops_proposed<255):
+                return return len(self.outputs)+14
+            if(self.loops_proposed<65535):
+                return return len(self.outputs)+24
+            else:
+                print("timer overflows two bytes")
+
+
+        elif(self.save_file['mode']==2):
+            #delay monostable
+            print("unimplmented timer (delay monostable) configuration")
+        elif(self.save_file['mode']==3):
+            #manual
+            print("unimplmented timer (manual) configuration")
+        else:
+            print("unimplmented timer configuration")
 
     def get_bitflag_names(self):
         out=[self.tile_label(self.x,self.y,"con")]
-        out.append(self.tile_label(self.x,self.y,"reset"))
+
+        if(self.save_file['mode']==3):
+            #manual mode
+            out.append(self.tile_label(self.x,self.y,"reset"))
 
         return out
 
     def get_register_names(self):
         out=[]
-        out.append(self.tile_label(self.x,self.y,"loop_counter"))
+        out.append(self.tile_label(self.x,self.y,"loop_counter_lo"))
         #more registers in multi byte case
+        if(self.loops_proposed>255):
+            out.append(self.tile_label(self.x,self.y,"loop_counter_hi"))
 
         return out
 
     def generate_code(self,total_cycles):
 
-        if(self.previous_total_cycles==total_cycles):
-            return
-
-        self.previous_total_cycles=total_cycles
-        
+        #better value for loops using adjusted cycles
+        self.loops=(self.save_file['time_to']/1000)/((total_cycles)/self.proc_speed)
 
         if(self.save_file['mode']==1):
-            use_bytes=0
-            for byte_number,cycl in zip(range(1,2),[len(self.outputs)+14,len(self.outputs)+24]):
-                loops=self.save_file['time_to']/((total_cycles-self.cycles+cycl)/self.proc_speed)
-                if(loops<2**byte_number-1):
-                    use_bytes=byte_number
-                    break
+            #hold config
+            if(self.loops_proposed<255):
+                self.generate_code_hold_1byte(total_cycles)
+            if(self.loops_proposed<65535):
+                self.generate_code_hold_2byte(total_cycles)
             else:
-                #for loop else
-                print('timer too big for implemented register nubmers')
-                raise UserWarning
+                print("timer overflows two bytes")
 
-
-            if(use_bytes==1):
-                assert(loops<256)
-
-                
-                input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
-                counter_register=self.tile_label(self.x,self.y,"loop_counter")  
-
-                self.code.append(" BTFSS "+input_name)
-                self.code.append(" goto "+self.tile_label(self.x,self.y,"no_rest"))
-                self.code.append(" MOVLW d'"+str(loops)+"'")
-                self.code.append(" MOVWF "+counter_register)
-                self.code.append(" goto "+self.tile_label(self.x,self.y,"end_temp"))
-
-                self.code.append(self.tile_label(self.x,self.y,"no_rest"))
-                self.code.append([' NOP']*3)
-                self.code.append(self.tile_label(self.x,self.y,"end_temp"))
-
-                self.code.append(" CLRF W")
-                self.code.append(" XORLW "+counter_register+",W")
-                self.code.append(" BTFSC STATUS,Z")
-                self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
-                self.code.append(" DECF "+counter_register+",F")
-                for out in self.outputs:
-                    self.code.append(" BSF "+self.bit_reg[out])
-                self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
-                self.code.append(self.tile_label(self.x,self.y,"skip"))
-                self.code.extend(self.delay_code(len(self.outputs)+2))
-                self.code.append(self.tile_label(self.x,self.y,"end"))
-                self.code.append(" BCF "+input_name)
-
-                self.cycles=len(self.outputs)+14
-            elif(use_bytes==2):
-                assert(loops<256**2)
-
-                input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
-                counter_register_hi=self.tile_label(self.x,self.y,"loop_counter_hi")
-                counter_register_lo=self.tile_label(self.x,self.y,"loop_counter_lo") 
-
-                # BTFSS input_state
-                # goto no_rest
-
-                # MOVLW time/total_cycles_lo
-                # MOVWF counter_lo
-
-                # MOVLW time/total_cycles_hi
-                # MOVWF counter_hi
-
-                # goto end_temp
-
-                # no_rest Delay 5
-                # end_temp
-
-                # CLEAR W
-                # XORLW counter_lo,W
-
-                # BTFSC STATUS,Z
-                # goto skip1
-
-                # CLRF W
-                # XORLW counter_hi,W
-
-                # BTFSC STATUS,Z
-                # goto skip2
-
-                # CLRF W
-                # XORWF counter_lo,W
-                # BTFSC STAUTS Z
-                # DECF counter_hi,F
-                # DECF counter_lo,F
-
-                # BSF output
-                # BSF outputs...
-                # goto end
-                # skip1 Delay 4
-                # skip2 Delay 6+n
-
-                # end BCF input_state
-
-                self.cycles=len(self.outputs)+24
-            else:
-                print('unexpected error')
-                raise
 
         elif(self.save_file['mode']==2):
-            use_bytes=0
-
+            #delay monostable
+            print("unimplmented timer (delay monostable) configuration")
         elif(self.save_file['mode']==3):
-            use_bytes=0
+            #manual
+            print("unimplmented timer (manual) configuration")
+        else:
+            print("unimplmented timer configuration")
 
-        return 1
+
+    def generate_code_hold_1byte(self,total_cycles):
+        assert(loops<256)
+
+        
+        input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+        counter_register=self.tile_label(self.x,self.y,"loop_counter")  
+
+        self.code.append(" BTFSS "+input_name)
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"no_rest"))
+        self.code.append(" MOVLW d'"+str(loops)+"'")
+        self.code.append(" MOVWF "+counter_register)
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end_temp"))
+
+        self.code.append(self.tile_label(self.x,self.y,"no_rest"))
+        self.code.append([' NOP']*3)
+        self.code.append(self.tile_label(self.x,self.y,"end_temp"))
+
+        self.code.append(" CLRF W")
+        self.code.append(" XORWF "+counter_register+",W")
+        self.code.append(" BTFSC STATUS,Z")
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"skip"))
+        self.code.append(" DECF "+counter_register+",F")
+        for out in self.outputs:
+            self.code.append(" BSF "+self.bit_reg[out])
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+        self.code.append(self.tile_label(self.x,self.y,"skip"))
+        self.code.extend(self.delay_code(len(self.outputs)+2))
+        self.code.append(self.tile_label(self.x,self.y,"end"))
+        self.code.append(" BCF "+input_name)
+
+
+    def generate_code_hold_2byte(self,total_cycles):
+        assert(loops<256**2)
+
+        input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+        counter_register_hi=self.tile_label(self.x,self.y,"loop_counter_hi")
+        counter_register_lo=self.tile_label(self.x,self.y,"loop_counter_lo") 
+
+        self.code.append(" BTFSS "+input_name)
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"no_rest"))
+
+
+
+        self.code.append(" MOVLW d'"+str(loops%256)+"'")
+        self.code.append(" MOVWF "+loop_counter_lo)
+
+        self.code.append(" MOVLW d'"+str(loops//256)+"'")
+        self.code.append(" MOVWF "+loop_counter_hi)
+
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end_temp"))
+
+        self.code.append(self.tile_label(self.x,self.y,"no_rest"))
+        self.code.extend(self.delay_code(5)
+        self.code.append(self.tile_label(self.x,self.y,"end_temp"))
+
+        self.code.append(" CLRF W")
+        self.code.append(" XORWF "+counter_register_lo+",W")
+
+        self.code.append(" BTFSC STATUS,Z")
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"skip1"))
+
+        self.code.append(" CLRF W")
+        self.code.append(" XORWF "+counter_register_hi+",W")
+
+        self.code.append(" BTFSC STATUS,Z")
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"skip2"))
+
+        self.code.append(" CLRF W")
+        self.code.append(" XORWF "+counter_register_lo+",W")
+        self.code.append(" BTFSC STATUS,Z")
+        self.code.append(" DECF "+counter_register_hi+",F")
+        self.code.append(" DECF "+counter_register_lo+",F")
+
+        for out in self.outputs:
+            self.code.append(" BSF "+self.bit_reg[out])
+
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+        self.code.append(self.tile_label(self.x,self.y,"skip1"))
+        self.code.extend(self.delay_code(4)
+        self.code.append(self.tile_label(self.x,self.y,"skip2"))
+        self.code.extend(self.delay_code(len(self.outputs)+6))
+
+        self.code.append(self.tile_label(self.x,self.y,"end"))
+        self.code.append(" BCF "+input_name)
+
+
 
 class PulsarNode(Node):
 
