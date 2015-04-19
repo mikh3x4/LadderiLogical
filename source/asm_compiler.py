@@ -473,7 +473,7 @@ class TimerNode(Node):
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end_temp"))
 
         self.code.append(self.tile_label(self.x,self.y,"no_rest"))
-        self.code.extend(self.delay_code(5)
+        self.code.extend(self.delay_code(5))
         self.code.append(self.tile_label(self.x,self.y,"end_temp"))
 
         self.code.append(" CLRF W")
@@ -499,7 +499,7 @@ class TimerNode(Node):
 
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
         self.code.append(self.tile_label(self.x,self.y,"skip1"))
-        self.code.extend(self.delay_code(4)
+        self.code.extend(self.delay_code(4))
         self.code.append(self.tile_label(self.x,self.y,"skip2"))
         self.code.extend(self.delay_code(len(self.outputs)+6))
 
