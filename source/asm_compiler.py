@@ -510,6 +510,20 @@ class TimerNode(Node):
 
 class PulsarNode(Node):
 
+    def get_bitflag_names(self):
+        out=[self.tile_label(self.x,self.y,"con")]
+        our.append(self.tile_label(self.x,self.y,"prev_state"))
+
+        return out
+
+    def get_register_names(self):
+        out=[]
+
+        out.append(self.tile_label(self.x,self.y,"pulsar_counter_lo"))
+
+
+        return out
+
     def get_minimum_cycles(self):
         pass
 
@@ -520,6 +534,12 @@ class PulsarNode(Node):
         print("not implemented")
 
 class SequencerNode(Node):
+
+    def get_bitflag_names(self):
+        pass
+
+    def get_register_names(self):
+        pass
 
     def get_minimum_cycles(self):
         pass

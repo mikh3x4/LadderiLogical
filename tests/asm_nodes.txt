@@ -1,19 +1,67 @@
-DONE:
+TESTED:
+
 delay
 switch
 genrator
 flag
 source
+
+IMPLMENTED:
+
+counter auto reset (single)
+counter manual reset (single)
+
 hold timer (single byte)
 hold timer (double byte)
-counter auto reset
-counter manual reset
-pulsar (single byte)
+
+WRITEN:
+
+pulsar (single byte) v1
+pulsar (single byte) v2
+sequencer
+
+TODO:
+
+pulsar (double byte)
+mono timer (single byte)
+mono timer (double byte)
+counter auto reset (double)
+counter manual reset (double)
+
+
 
 
 cycle=number of cycles for node
 n=number of output nodes
 
+
+pulsar (single) (cycle=14+n)
+
+Btfss imput_state
+goto off
+incf pulsar_counter
+MOvlw loop_val
+xorfw pulsar_counter
+btFSS status,z
+goto skip
+
+movlfw d'2^i'
+xorfw prev_state[:-2],F
+BTFSS prev_state
+goto skip_out
+
+BSF output
+BSF output
+BSF outputs...
+
+goto end
+
+off CLRF pulsar_counter
+BCF prev_state
+delay 3
+skip delay 4
+skip_out delay n+1
+end BCF input_state
 
 
 sequencer: (cycle=3n+10)
@@ -58,7 +106,7 @@ BSF prev_edge 19
 
 
 
-pulsar: (single byte)(cycle=13+n)
+pulsar: (single byte)(cycle=13+n) ##buged no positive
 
 
 BTFSS input_state
