@@ -568,20 +568,53 @@ class Compiler:
 
         self.get_code()
 
+    def generate_portb_update(self,output_repete):
+        out=[]
+        print(output_repete)
+        for index,lis in enumerate(output_repete):
+            for r in lis:
+                out.append(' BCF special_temp_PORTB,'+str(r))
+                out.append(' BTFSC special_temp_PORTB,'+str(index))
+                out.append(' BSF special_temp_PORTB,'+str(r))
+
+        out.extend([' MOVF special_temp_PORTB,W',' MOVWF PORTB'])
+
+        return out
+
     def get_code(self):
 
         self.bitflag_register_names={}
         bitflag_base_name="bitflag_reg"
 
         io_data=self.io.save_to_file()
+
+        output_repete=[[],[],[],[],[],[],[],[]]
+
         i=0
         for flag in io_data['outputs']:
-            #move to top to prevent blanch bitflags?
-            self.bitflag_register_names["flag_"+flag]="PORTB,"+str(i)#overwriting
+            try:
+                original_out=self.bitflag_register_names["flag_"+flag]
+                output_repete[int(original_out[-1])].append(i)
+
+            except KeyError:
+                self.bitflag_register_names["flag_"+flag]="special_temp_PORTB,"+str(i)#overwriting higher outputs
+
+
+                
+                
             i+=1
+
+
+        portb_copy_code=self.generate_portb_update(output_repete)
+
+
+        #move before register to register multi byte timers
+        proposed_total_cycles=sum(tile.get_minimum_cycles() for tile in self.tiles_linear)+len(portb_copy_code) #plus two due to main loop, fix multiout
+        total_cycles=sum(tile.adjust_cycles(proposed_total_cycles) for tile in self.tiles_linear)+len(portb_copy_code) #plus two due to main loop, fix multiout
 
         i=0
         n=1
+
         self.registers.append(bitflag_base_name+'_0')
         for tile in self.tiles_linear:
             self.registers.extend(tile.get_register_names())
@@ -595,22 +628,20 @@ class Compiler:
 
                 try:
                     self.bitflag_register_names[bit]
+                    print("bitflag name double used in get_bitflag_names")
                 except KeyError:
                     self.bitflag_register_names[bit]=bitflag_base_name+'_'+str(n)+","+str(i)
                     i+=1
 
         i=0
         for flag in io_data['inputs']:
-            self.bitflag_register_names["flag_"+flag]="PORTA,"+str(i)
+            self.bitflag_register_names["flag_"+flag]="PORTA,"+str(i)#garantiude to be unique by GUI
             i+=1
 
         for tile in self.tiles_linear:
             tile.set_bit_flag_names(self.bitflag_register_names)
 
         
-        #move before register to register multi byte timers
-        proposed_total_cycles=sum(tile.get_minimum_cycles() for tile in self.tiles_linear)+2 #plus two due to main loop, fix multiout
-        total_cycles=sum(tile.adjust_cycles(proposed_total_cycles) for tile in self.tiles_linear)+2 #plus two due to main loop, fix multiout
 
 
         for tile in self.tiles_linear:
@@ -631,7 +662,7 @@ class Compiler:
             else:
                 del human_readable_register_names[io_register]
 
-        for io_register in ("PORTB,"+str(i) for i in range(8)):
+        for io_register in ("special_temp_PORTB,"+str(i) for i in range(8)):
             try:
                 out.append(';'+io_register+': '+human_readable_register_names[io_register])
             except KeyError:
@@ -643,13 +674,18 @@ class Compiler:
         for tiles_bitflags,other_registers in sorted(human_readable_register_names.items()):
             out.append(';'+other_registers+': '+tiles_bitflags)
 
+        out.append(';PORTB: actuall output from special_temp_PORTB')
 
         out.append('')
         out.append('main')
         for tile in self.tiles_linear:
             out.extend(tile.code)
 
-        #fix outputs on multyple pins remember about time fixing
+        #fixs outputs on multyple pins remember about time fixing
+
+        out.append('')
+
+        out.extend(portb_copy_code)
 
         out.append(' goto main')#plus 2 to cycles
 
