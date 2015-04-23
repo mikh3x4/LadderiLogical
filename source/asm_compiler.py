@@ -648,7 +648,7 @@ class Compiler:
 
                 try:
                     self.bitflag_register_names[bit]
-                    print("bitflag name double used in get_bitflag_names")
+                    #some times its forceed to a special register as its in the output
                 except KeyError:
                     self.bitflag_register_names[bit]=bitflag_base_name+'_'+str(n)+","+str(i)
                     i+=1
