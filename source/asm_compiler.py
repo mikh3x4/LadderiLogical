@@ -357,13 +357,13 @@ class TimerNode(Node):
 
     def adjust_cycles(self,proposed_total_cycles):
 
-        self.loops_proposed=(self.save_file['time_to']/1000)/((proposed_total_cycles)/self.proc_speed)
+        self.loops_proposed=int((self.save_file['time_to']/1000)/((proposed_total_cycles)/self.proc_speed))
 
         if(self.save_file['mode']==1):
             #hold config
-            if(self.loops_proposed<255):
+            if(self.loops_proposed<256):
                 return len(self.outputs)+14
-            if(self.loops_proposed<65535):
+            if(self.loops_proposed<65536):
                 return len(self.outputs)+24
             else:
                 print("timer overflows two bytes")
@@ -399,7 +399,7 @@ class TimerNode(Node):
     def generate_code(self,total_cycles):
 
         #better value for loops using adjusted cycles
-        self.loops=(self.save_file['time_to']/1000)/((total_cycles)/self.proc_speed)
+        self.loops=int((self.save_file['time_to']/1000)/((total_cycles)/self.proc_speed))
 
         if(self.save_file['mode']==1):
             #hold config
@@ -430,7 +430,7 @@ class TimerNode(Node):
 
         self.code.append(" BTFSS "+input_name)
         self.code.append(" goto "+self.tile_label(self.x,self.y,"no_rest"))
-        self.code.append(" MOVLW d'"+str(loops)+"'")
+        self.code.append(" MOVLW d'"+str(self.loops)+"'")
         self.code.append(" MOVWF "+counter_register)
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end_temp"))
 
@@ -464,10 +464,10 @@ class TimerNode(Node):
 
 
 
-        self.code.append(" MOVLW d'"+str(loops%256)+"'")
+        self.code.append(" MOVLW d'"+str(self.loops%256)+"'")
         self.code.append(" MOVWF "+loop_counter_lo)
 
-        self.code.append(" MOVLW d'"+str(loops//256)+"'")
+        self.code.append(" MOVLW d'"+str(self.loops//256)+"'")
         self.code.append(" MOVWF "+loop_counter_hi)
 
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end_temp"))
@@ -512,7 +512,7 @@ class PulsarNode(Node):
 
     def get_bitflag_names(self):
         out=[self.tile_label(self.x,self.y,"con")]
-        our.append(self.tile_label(self.x,self.y,"prev_state"))
+        out.append(self.tile_label(self.x,self.y,"state"))
 
         return out
 
@@ -521,17 +521,87 @@ class PulsarNode(Node):
 
         out.append(self.tile_label(self.x,self.y,"pulsar_counter_lo"))
 
+        if(self.loops_proposed>255):
+            pass
+
 
         return out
 
     def get_minimum_cycles(self):
-        pass
+        return 13+len(self.outputs)
 
     def adjust_cycles(self,proposed_total_cycles):
-        pass
+
+        self.loops_proposed=int((self.save_file['time_to']/1000)/((proposed_total_cycles)/self.proc_speed))
+
+
+        if(self.loops_proposed<256):
+            return 13+len(self.outputs)
+
+        if(self.loops_proposed<65536):
+            pass
+
+        print("double byte pulsar not implemented")
 
     def generate_code(self,total_cycles):
-        print("not implemented")
+
+
+        self.loops=int((self.save_file['time_to']/1000)/((total_cycles)/self.proc_speed))
+
+        if(self.loops_proposed<256):
+            self.generate_1byte_code(total_cycles)
+
+        if(self.loops_proposed<65536):
+            pass
+
+
+
+    def generate_1byte_code(self,total_cycles):
+
+
+        input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+        out_state=self.bit_reg[self.tile_label(self.x,self.y,"state")]
+        loop_register=self.tile_label(self.x,self.y,"pulsar_counter_lo") 
+
+        self.code.append(" BTFSS "+input_name)
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"off"))
+
+        self.code.append(" INCF "+loop_register+",F")
+
+        self.code.append(" MOVLW d'"+str(self.loops)+"'")
+        self.code.append(" XORWF "+loop_register+",W")
+
+
+
+        self.code.append(" MOVLW "+"d'"+str(2**int(out_state[-1]))+"'")
+        self.code.append(" BTFSC STATUS,Z")
+
+        self.code.append(" XORWF "+out_state[:-2]+",F")
+
+        self.code.append(" BTFSS "+out_state)
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"skip_out"))
+
+        for out in self.outputs:
+            self.code.append(" BSF "+self.bit_reg[out])
+
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+
+        self.code.append(self.tile_label(self.x,self.y,"off"))
+
+        self.code.append(" CLRF "+loop_register+",F")
+
+        self.code.append(" BSF "+out_state)
+
+        self.code.extend(self.delay_code(6))
+
+        self.code.append(self.tile_label(self.x,self.y,"skip_out"))
+        self.code.extend(self.delay_code(len(self.outputs)+1))
+
+        self.code.append(self.tile_label(self.x,self.y,"end"))
+        self.code.append(" BCF "+input_name)
+
+
+
 
 class SequencerNode(Node):
 
@@ -565,8 +635,8 @@ class Compiler:
                             tiles_mod.Generator: GeneratorNode,
                             tiles_mod.Switch: SwitchNode,
                             tiles_mod.Counter: CounterNode,
-                            tiles_mod.Pulsar: TimerNode,
-                            tiles_mod.Timer: PulsarNode,
+                            tiles_mod.Pulsar: PulsarNode,
+                            tiles_mod.Timer: TimerNode,
                             tiles_mod.Sequencer: SequencerNode}
 
         self.proc_speed=4*10**6

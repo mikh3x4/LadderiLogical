@@ -14,9 +14,11 @@ counter manual reset (single)
 hold timer (single byte)
 hold timer (double byte)
 
+
+pulsar (single byte)
+
 WRITEN:
 
-pulsar (single byte) ??? verify
 sequencer
 
 TODO:
@@ -34,7 +36,7 @@ cycle=number of cycles for node
 n=number of output nodes
 
 
-pulsar (single) (cycle=14+n=19+n)
+pulsar (single) (cycle=13+n)
 
 BTFSS imput_state
 GOTO off
@@ -44,8 +46,8 @@ MOVLW loop_val
 XORFW pulsar_counter
 
 
-MOVLFW d'2^i' ##IF it dosn't affect z flag
-BTFSS status,z
+MOVLW d'2^i'
+BTFSC status,z
 XORFW state[:-2],F
 
 

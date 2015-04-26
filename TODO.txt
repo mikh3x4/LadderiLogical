@@ -2,6 +2,10 @@
 
 -Add protection to actions that may cause loss of data
 
--Write asm compiler
+-Add visuals to unsaved files
+
+-Add better comments to asm compiler
+
+-Add all tiles to asm compiler
 
 -Improve graphics

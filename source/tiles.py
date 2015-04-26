@@ -841,6 +841,8 @@ class Pulsar(Tile):
             self.state=1
         else:
             self.state=0
+            self.time=time()-int(self.time_to)
+            self.prev=0
             
     def output_update(self):
 
