@@ -16,10 +16,12 @@ hold timer (double byte)
 
 
 pulsar (single byte)
+sequencer
+
 
 WRITEN:
 
-sequencer
+
 
 TODO:
 
@@ -113,8 +115,6 @@ BTFSC input_state
 BSF prev_edge
 
 BCF input_state
-
-
 
 
 
