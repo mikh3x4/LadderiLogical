@@ -669,29 +669,29 @@ class SequencerNode(Node):
 
 
 
-# BTFSS seq_1
-# goto not_seq_1
-# BCF seq_1
-# BSF seq_2
-# delay start at (n-1)*3 and count down
-# goto end
-# not_seq_1 
+        # BTFSS seq_1
+        # goto not_seq_1
+        # BCF seq_1
+        # BSF seq_2
+        # delay start at (n-1)*3 and count down
+        # goto end
+        # not_seq_1 
 
-# BTFSS seq_2
-# goto not_seq_2
-# BCF seq_2
-# BSF seq_3
-# delay 3
-# goto end
-# not_seq_2
+        # BTFSS seq_2
+        # goto not_seq_2
+        # BCF seq_2
+        # BSF seq_3
+        # delay 3
+        # goto end
+        # not_seq_2
 
-# BTFSS seq_3
-# goto not_seq_3
-# BCF seq_3
-# BSF seq_1
-# delay 0
-# goto end
-# not_seq_3
+        # BTFSS seq_3
+        # goto not_seq_3
+        # BCF seq_3
+        # BSF seq_1
+        # delay 0
+        # goto end
+        # not_seq_3
 
 
         self.code.append(" BSF "+self.bit_reg["flag_"+self.save_file["steps"][0]])
@@ -874,6 +874,8 @@ class Compiler:
 
         print('\n'.join(out))
 
+        CompilerWindow('\n'.join(out))
+
 
     def delay_footer(self):
         return ["small_delay_6 nop",
@@ -884,4 +886,19 @@ class Compiler:
         "delay3_1 Decfsz W,W",
         " goto delay3_1",
         " return"]
+
+import tkinter as tk
+
+class CompilerWindow:
+
+    def __init__(self,compiled_result):
+        self.root=tk.Toplevel()
+        self.root.title('Compler Result')
+
+        res=tk.Text(self.root)
+
+        res.pack()
+
+
+
 
