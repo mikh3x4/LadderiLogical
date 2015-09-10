@@ -895,9 +895,20 @@ class CompilerWindow:
         self.root=tk.Toplevel()
         self.root.title('Compler Result')
 
-        res=tk.Text(self.root)
+        self.res=tk.Text(self.root)
+        
 
-        res.pack()
+        self.res.pack(fill=tk.BOTH, expand=1)
+        self.res.insert(tk.END, compiled_result)
+
+        self.res.bind("<Command-a>", self.select_all)
+
+    def select_all(self,event):
+        self.res.tag_add(tk.SEL, "1.0", tk.END)
+        self.res.mark_set(tk.INSERT, "1.0")
+        self.res.see(tk.INSERT)
+        return 'break'
+
 
 
 
