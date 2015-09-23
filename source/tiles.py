@@ -591,8 +591,7 @@ class Switch(Tile):
         for check,inp in zip(self.conector_checks,self.inputs):
             if(check.get()==2 and inp==1):
                 self.state=1
-            else:
-                self.state=0
+
 
 
     def output_update(self):
