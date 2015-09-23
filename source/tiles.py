@@ -588,6 +588,7 @@ class Switch(Tile):
             self.board.canvas.itemconfig(self.missing_key,fill="#FFFF00")
 
     def input_update(self):
+        self.state=0
         for check,inp in zip(self.conector_checks,self.inputs):
             if(check.get()==2 and inp==1):
                 self.state=1
