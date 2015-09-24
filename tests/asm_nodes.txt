@@ -21,11 +21,11 @@ sequencer
 
 WRITEN:
 
-
+pulsar (multi byte)
 
 TODO:
 
-pulsar (double byte)
+
 mono timer (single byte)
 mono timer (double byte)
 counter auto reset (double)
@@ -71,6 +71,53 @@ skip_out delay n+1
 
 end 
 BCF input_state 13+n
+
+pulsar multi(k)_byte: 6k+n+10 n+22 when k=2
+
+BTFSS input_state
+GOTO off
+
+INC pulsar_counter_1
+BTFSC STATUS,C
+INC pulsar_counter_2
+
+MOVLW loop_val_1
+XORFW pulsar_counter_1
+BTFSS STATUS, Z
+GOTO out_1
+
+MOVLW loop_val_2
+XORFW pulsar_counter_2
+BTFSS STATUS, Z
+GOTO out_2
+
+MOVLW d'2^i'
+XORFW state[:-2],F
+GOTO outs
+
+out_1 delay 4
+out_2 delay 3
+
+outs BTFSS state
+GOTO skip_out
+
+BSF output
+BSF output
+BSF output
+...
+
+GOTO end
+
+off
+CLRF pulsar_counter_1
+CLRF pulsar_counter_2
+BSF state
+
+delay 5k+4
+skip_out delay n+1
+end BCF input_state
+
+
 
 
 
