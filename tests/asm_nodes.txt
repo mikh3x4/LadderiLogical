@@ -46,9 +46,9 @@ BTFSS input_state
 GOTO off
 
 INCF pulasr_1
-BTFSC STATUS,C
+BTFSC STATUS,Z
 INCF pulasr_2
-BTFSC STATUS,C
+BTFSC STATUS,Z
 INCF pulasr_3
 
 MOVLW loop_val_1

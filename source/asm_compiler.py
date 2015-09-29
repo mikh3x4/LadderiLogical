@@ -576,7 +576,7 @@ class PulsarNode(Node):
             self.code.append(" INCF "+self.tile_label(self.x,self.y,"pulsar_counter_"+str(i))+",F")
             
             if(i!=self.number_of_bytes-1):
-                self.code.append(" BTFSC STATUS,C")
+                self.code.append(" BTFSC STATUS,Z")
 
         for i in range(self.number_of_bytes):
             self.code.append(" MOVLW d'"+str(loop_vals[i])+"'")
