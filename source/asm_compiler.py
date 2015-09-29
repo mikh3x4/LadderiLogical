@@ -107,7 +107,7 @@ class Node:
             raise OverflowError
 
         if(6<cycles):
-            return [" MOVLW "+str(int(cycles/3)-2)," CALL delay3_"+str( 3 if cycles%3==0 else cycles%3)]
+            return [" MOVLW "+"d'"+str(int(cycles/3)-2)+"'"," CALL delay3_"+str( 3 if cycles%3==0 else cycles%3)]
 
 class SourceNode(Node):
 
@@ -521,30 +521,22 @@ class PulsarNode(Node):
     def get_register_names(self):
         out=[]
 
-        out.append(self.tile_label(self.x,self.y,"pulsar_counter_lo"))
-
-        if(self.loops_proposed>255):
-            pass
-
+        for i in range(self.number_of_bytes):
+            out.append(self.tile_label(self.x,self.y,"pulsar_counter_"+str(i)))
 
         return out
 
     def get_minimum_cycles(self):
-        return 13+len(self.outputs)
+        return 22+len(self.outputs)
 
     def adjust_cycles(self,proposed_total_cycles):
 
         self.loops_proposed=int((self.save_file['time_to']/1000)/((proposed_total_cycles)/self.proc_speed))
 
+        assert(self.loops_proposed)
 
-        if(self.loops_proposed<256):
-        	self.number_of_bytes=1
-            return 13+len(self.outputs)
-
-        else:
-
-			self.number_of_bytes=math.log(self.loops_proposed,2)//8+1
-			return 10+len(self.outputs)+6*self.number_of_bytes
+        self.number_of_bytes=int(math.log(self.loops_proposed,2)//8)+1
+        return 15+len(self.outputs)+7*self.number_of_bytes
 
 
     def generate_code(self,total_cycles):
@@ -552,40 +544,81 @@ class PulsarNode(Node):
 
         self.loops=int((self.save_file['time_to']/1000)/((total_cycles)/self.proc_speed))
 
-        if(self.number_of_bytes==1):
-        	assert(self.loops_proposed<256)
-            self.generate_1byte_code(total_cycles)
+        if(self.number_of_bytes>5):
+            print("Are you sure? Number of bytes used for puslar is over 5!")
 
-        else:
-	        if(self.number_of_bytes>5):
-	        	print("Are you sure? Number of bytes used for puslar is over 5!")
-
-	        self.generate_1byte_code(total_cycles)
+        self.generate_kbyte_code(total_cycles)
 
 
 
-    def generate_1byte_code(self,total_cycles):
+    def generate_kbyte_code(self,total_cycles):
 
 
         input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
         out_state=self.bit_reg[self.tile_label(self.x,self.y,"state")]
-        loop_register=self.tile_label(self.x,self.y,"pulsar_counter_lo") 
+
+
+        loop_vals=[]
+        loops=self.loops
+
+        for i in range(self.number_of_bytes):
+            loop_vals.append(loops%256)
+            loops=loops//256
+
+
 
         self.code.append(" BTFSS "+input_name)
         self.code.append(" goto "+self.tile_label(self.x,self.y,"off"))
 
-        self.code.append(" INCF "+loop_register+",F")
 
-        self.code.append(" MOVLW d'"+str(self.loops)+"'")
-        self.code.append(" XORWF "+loop_register+",W")
 
+        for i in range(self.number_of_bytes):
+            self.code.append(" INCF "+self.tile_label(self.x,self.y,"pulsar_counter_"+str(i))+",F")
+            
+            if(i!=self.number_of_bytes-1):
+                self.code.append(" BTFSC STATUS,C")
+
+        for i in range(self.number_of_bytes):
+            self.code.append(" MOVLW d'"+str(loop_vals[i])+"'")
+            self.code.append(" XORWF "+self.tile_label(self.x,self.y,"pulsar_counter_"+str(i))+",W")
+            self.code.append(" BTFSC STATUS,Z")
+            self.code.append(" goto "+self.tile_label(self.x,self.y,"out_"+str(i)))
 
 
         self.code.append(" MOVLW "+"d'"+str(2**int(out_state[-1]))+"'")
-        self.code.append(" BTFSC STATUS,Z")
-
         self.code.append(" XORWF "+out_state[:-2]+",F")
 
+        self.code.append(self.tile_label(self.x,self.y,"off"))
+
+        for i in range(self.number_of_bytes):
+            self.code.append(" CLRF "+self.tile_label(self.x,self.y,"pulsar_counter_"+str(i)))
+
+
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"mid"))
+
+
+        for i in range(self.number_of_bytes):
+            self.code.append(self.tile_label(self.x,self.y,"out_"+str(i)))
+
+            if(i==self.number_of_bytes-1):
+                self.code.extend(self.delay_code(3+self.number_of_bytes))
+            else:
+                self.code.extend(self.delay_code(4))
+
+
+        self.code.append(self.tile_label(self.x,self.y,"mid"))
+
+        delay_temp=self.delay_code(6*self.number_of_bytes+1)
+
+        self.code.extend(delay_temp[:-1]) #ensure it is single line (goto forced)
+
+        self.code.append(" BTFSS "+input_name)
+        self.code.append(delay_temp[-1]+';ensure it is single line (goto forced)') #ensure it is single line (goto forced)
+
+        self.code.append(" BTFSS "+input_name)
+        self.code.append(" BSF "+out_state)
+
+        self.code.append(" BTFSC "+input_name)
         self.code.append(" BTFSS "+out_state)
         self.code.append(" goto "+self.tile_label(self.x,self.y,"skip_out"))
 
@@ -593,31 +626,11 @@ class PulsarNode(Node):
             self.code.append(" BSF "+self.bit_reg[out])
 
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
-
-        self.code.append(self.tile_label(self.x,self.y,"off"))
-
-        self.code.append(" CLRF "+loop_register+",F")
-
-        self.code.append(" BSF "+out_state)
-
-        self.code.extend(self.delay_code(6))
-
         self.code.append(self.tile_label(self.x,self.y,"skip_out"))
         self.code.extend(self.delay_code(len(self.outputs)+1))
 
         self.code.append(self.tile_label(self.x,self.y,"end"))
         self.code.append(" BCF "+input_name)
-
-
-    def generate_kbyte_code(self,total_cycles):
-
-	    input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
-        out_state=self.bit_reg[self.tile_label(self.x,self.y,"state")]
-
-        for i in range(self.number_of_bytes):
-	        loop_register=self.tile_label(self.x,self.y,"pulsar_counter_"+str(i))
-
-	    pass
 
 
 
@@ -841,6 +854,7 @@ class Compiler:
             tile.generate_code(total_cycles)
 
         #write code to out
+        self.registers.extend(['porta','portb','special_temp_portb'])
         out=[]
         out.append(';Code generated by LadderiLogical')
         out.append('')
