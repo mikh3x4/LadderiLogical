@@ -1,5 +1,5 @@
 import tiles as tiles_mod
-
+import math
 
 class Node:
 
@@ -538,23 +538,29 @@ class PulsarNode(Node):
 
 
         if(self.loops_proposed<256):
+        	self.number_of_bytes=1
             return 13+len(self.outputs)
 
-        if(self.loops_proposed<65536):
-            pass
+        else:
 
-        print("double byte pulsar not implemented")
+			self.number_of_bytes=math.log(self.loops_proposed,2)//8+1
+			return 10+len(self.outputs)+6*self.number_of_bytes
+
 
     def generate_code(self,total_cycles):
 
 
         self.loops=int((self.save_file['time_to']/1000)/((total_cycles)/self.proc_speed))
 
-        if(self.loops_proposed<256):
+        if(self.number_of_bytes==1):
+        	assert(self.loops_proposed<256)
             self.generate_1byte_code(total_cycles)
 
-        if(self.loops_proposed<65536):
-            pass
+        else:
+	        if(self.number_of_bytes>5):
+	        	print("Are you sure? Number of bytes used for puslar is over 5!")
+
+	        self.generate_1byte_code(total_cycles)
 
 
 
@@ -601,6 +607,17 @@ class PulsarNode(Node):
 
         self.code.append(self.tile_label(self.x,self.y,"end"))
         self.code.append(" BCF "+input_name)
+
+
+    def generate_kbyte_code(self,total_cycles):
+
+	    input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+        out_state=self.bit_reg[self.tile_label(self.x,self.y,"state")]
+
+        for i in range(self.number_of_bytes):
+	        loop_register=self.tile_label(self.x,self.y,"pulsar_counter_"+str(i))
+
+	    pass
 
 
 
