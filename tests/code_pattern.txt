@@ -1,0 +1,49 @@
+;----------------------------------------------------------;
+; Program title: TITLE GOES HERE            ;
+;----------------------------------------------------------;
+; Written by: LadderiLogical                               ;
+;----------------------------------------------------------;
+; Date:  DATE GOES HERE                                    ;
+;----------------------------------------------------------;
+; Version:          1.0                                    ;
+;----------------------------------------------------------;
+; Device:  PIC16F627                                       ;
+;----------------------------------------------------------;
+; Oscillator: Internal 4 MHz                               ;
+;----------------------------------------------------------;
+  LIST  P=PIC16F627A ;select device
+    ;Tells MPLAB what processor IC is being used
+  INCLUDE  c:\program files (x86)\microchip\MPASM Suite\P16F627A.inc
+    ;include header file
+    ;from default location
+    ;tells the MPLAB where to find the files
+
+  __config 0x3F10     ;sets config to; internal  I/O, no watchdog,Power
+    ;up timer on, master Reset off,
+    ;no brown-out, no LV program, no read protect,
+    ;no code protect
+;----------------------------------------------------------;
+; DEFINE REGISTERS                                         ;
+;----------------------------------------------------------;
+
+cblock  0x20
+##REGISTERS GO HERE endc
+
+
+
+init    
+     MOVLW d'07'
+     MOVWF CMCON         ;Disable comparators
+     BSF STATUS, RP0     ;select bank1 for setup
+     BSF PCON, OSCF      ;select 4 MHz
+     MOVLW b'01110000'
+     MOVWF TRISA         ;set PortA as inputs on designated pins
+     MOVLW b'00000000'
+     MOVWF TRISB         ;set PortB all outputs
+     BCF STATUS, RP0     ;return to bank0 for program operation
+
+     CLRF dig_one        ;clear registers to prevent ghosting
+     CLRF dig_two
+     CLRF ##REGISTERS GO HERE ALSO
+
+#CODE GOES HERE
