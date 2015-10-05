@@ -1110,16 +1110,14 @@ class Sequencer(Tile):
         entry=ttk.Entry(master=self.frame,width=10,validate="none",validatecommand=vcmd,invalidcommand=temp(x))
         entry.pack()
 
-        name=name_arg
 
 
         i=1
         try:
-            self.board.flags[name]
             while 1:
+                name=name_arg+str(i)
                 self.board.flags[name]
                 i+=1
-                name=name_arg+str(i)
         except KeyError:
             self.board.flags[name]=[self,0]
 
@@ -1196,7 +1194,7 @@ class Sequencer(Tile):
 
         on=any(map(lambda x:x==1,self.inputs))
 
-        if(on and self.edge==0):
+        if(on and self.edge==0 and len(self.sequence_steps)!=0):
             self.prev=time()
             self.index=(self.index+1)%len(self.sequence_steps)
 
