@@ -325,33 +325,34 @@ class TileBoard(ttk.Frame):
 
     def update_all(self):
 
-        self.reintegrate_tiles()#If moved need to reset all states
-
-        for tile in self.functionals:
-            tile.update()
-
-
-        for tile in self.relays:
-            tile.input_update()
-        for tile in self.relays:
-            tile.inputs=[0,0,0,0]
-
-        for tile in self.relays:
-            tile.update()
-
-
-        for tile in self.functionals:
-            tile.input_update()
-        for tile in self.functionals:
-            tile.inputs=[0,0,0,0]
-
         try:
-            self.app.io.update()
-        except AttributeError:
-            print('initialy no board existant')
+            self.reintegrate_tiles()#If moved need to reset all states
+
+            for tile in self.functionals:
+                tile.update()
 
 
-        self.after(10,self.update_all)
+            for tile in self.relays:
+                tile.input_update()
+            for tile in self.relays:
+                tile.inputs=[0,0,0,0]
+
+            for tile in self.relays:
+                tile.update()
+
+
+            for tile in self.functionals:
+                tile.input_update()
+            for tile in self.functionals:
+                tile.inputs=[0,0,0,0]
+
+            try:
+                self.app.io.update()
+            except AttributeError:
+                print('initialy no board existant')
+
+        finally:
+            self.after(10,self.update_all)
 
         
         # size increase prvision
