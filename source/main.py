@@ -1,5 +1,6 @@
 from tile_board import TileBoard
 from extra_ui import IOBoard, ToolBox
+from asm_compiler import Compiler, CompilerSettingsWindow
 import tkinter.ttk as ttk
 import tkinter as tk
 from tkinter import filedialog
@@ -61,6 +62,16 @@ class LadderLogic:
         self.filemenu.add_separator()
         self.filemenu.add_command(label="Exit", command=self.root.quit, accelerator="Command+Q")
         self.menubar.add_cascade(label="File", menu=self.filemenu)
+
+
+        self.compilermenu = tk.Menu(self.menubar, tearoff=0)
+        self.compilermenu.add_command(label="Options", command=lambda:CompilerSettingsWindow(self.board,self.io))
+        self.compilermenu.add_separator()
+        self.compilermenu.add_command(label="Generate for MPLab", command=lambda:Compiler(self.board,self.io,typ='MPLab'))
+        self.compilermenu.add_command(label="Generate for Debugger", command=lambda:Compiler(self.board,self.io,typ='Debug'))
+        self.compilermenu.add_command(label="Generate for Custom", command=lambda:Compiler(self.board,self.io,typ='Plain'))
+
+        self.menubar.add_cascade(label="Compiler", menu=self.compilermenu)
 
         self.root.config(menu=self.menubar)
 

@@ -226,10 +226,6 @@ class ToolBox(ttk.Frame):
         self.flag.grid(row=0,column=5)
 
 
-        self.compile=ttk.Button(master=self,text="Compile Testing!",command=lambda:CompilerSettingsWindow(self.app.board,self.app.io))
-        self.compile.grid(row=0,column=6)
-
-
     def change_tool(self,name):
         print("changed to "+name)
         self.app.board.previous_shift_comand=False
