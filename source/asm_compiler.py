@@ -1,5 +1,7 @@
 import tiles as tiles_mod
 import math
+import tkinter as tk
+import tkinter.ttk as ttk
 
 class Node:
 
@@ -744,7 +746,9 @@ class SequencerNode(Node):
 
 class Compiler:
 
-    def __init__(self,board,io):
+    def __init__(self,board,io,typ="plain"):
+
+        self.typ=typ
 
         self.Tile_Node_Links={tiles_mod.Source: SourceNode,
                             tiles_mod.Flag: FlagNode,
@@ -916,7 +920,25 @@ class Compiler:
         " goto delay3_1",
         " return"]
 
-import tkinter as tk
+class CompilerSettingsWindow():
+
+    def __init__(self,board,io):
+        self.root=tk.Toplevel()
+        self.root.title('Compiler Settigs')
+
+        self.plain=ttk.Button(master=self.root,text="Auto",command=lambda:Compiler(board,io,type="plain"))
+        self.MPLab=ttk.Button(master=self.root,text="Auto",command=lambda:Compiler(board,io,type="MPLab"))
+        self.Debug=ttk.Button(master=self.root,text="Auto",command=lambda:Compiler(board,io,type="Debug"))
+
+        self.plain.pack()
+        self.MPLab.pack()
+        self.Debug.pack()
+
+
+        
+
+
+        
 
 class CompilerWindow:
 
