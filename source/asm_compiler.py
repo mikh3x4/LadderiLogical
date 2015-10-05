@@ -895,11 +895,11 @@ class Compiler:
         human_readable_register_names={v: k for k, v in human_readable_register_names.items()}
         for tiles_bitflags,other_registers in sorted(human_readable_register_names.items()):
             out.append(';'+other_registers+': '+tiles_bitflags)
-
+    	out.append('')
 
 
         if(self.typ=='Debug'):
-            out.append('from PICClass import run_PIC')
+            out.append('from PICclass import run_PIC')
             out.append('reg=[')
             out.extend(("'"+x+"'," for x in self.registers))
             out.append(']')
