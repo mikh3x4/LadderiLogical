@@ -784,11 +784,11 @@ class Compiler:
         print(output_repete)
         for index,lis in enumerate(output_repete):
             for r in lis:
-                out.append(' BCF special_temp_PORTB,'+str(r))
-                out.append(' BTFSC special_temp_PORTB,'+str(index))
-                out.append(' BSF special_temp_PORTB,'+str(r))
+                out.append(' BCF special_temp_portb,'+str(r))
+                out.append(' BTFSC special_temp_portb,'+str(index))
+                out.append(' BSF special_temp_portb,'+str(r))
 
-        out.extend([' MOVF special_temp_PORTB,W',' MOVWF PORTB'])
+        out.extend([' MOVF special_temp_portb,W',' MOVWF PORTB'])
 
         return out
 
@@ -808,7 +808,7 @@ class Compiler:
                 output_repete[int(original_out[-1])].append(i)
 
             except KeyError:
-                self.bitflag_register_names["flag_"+flag]="special_temp_PORTB,"+str(i)#overwriting higher outputs
+                self.bitflag_register_names["flag_"+flag]="special_temp_portb,"+str(i)#overwriting higher outputs
 
                 
             i+=1
@@ -904,7 +904,7 @@ class Compiler:
             else:
                 del human_readable_register_names[io_register]
 
-        for io_register in ("special_temp_PORTB,"+str(i) for i in range(8)):
+        for io_register in ("special_temp_portb,"+str(i) for i in range(8)):
             try:
                 out.append(comment_char+io_register+': '+human_readable_register_names[io_register])
             except KeyError:
@@ -919,14 +919,14 @@ class Compiler:
 
         if(self.typ=='MPLab'):
             out.append('''
-LIST  P=PIC16F627A ;select device
+ LIST  P=PIC16F627A ;select device
     ;Tells MPLAB what processor IC is being used
-  INCLUDE  c:\program files (x86)\microchip\MPASM Suite\P16F627A.inc
+  INCLUDE  c:\program files (x86)\microchip\MPASM Suite\P16F627A.inc
     ;include header file
     ;from default location
     ;tells the MPLAB where to find the files
 
-  __config 0x3F10     ;sets config to; internal  I/O, no watchdog,Power
+  __config 0x3F10     ;sets config to; internal  I/O, no watchdog,Power
     ;up timer on, master Reset off,
     ;no brown-out, no LV program, no read protect,
     ;no code protect
@@ -934,22 +934,22 @@ LIST  P=PIC16F627A ;select device
 ; DEFINE REGISTERS                                         ;
 ;----------------------------------------------------------;
 
-    cblock  0x20''')
+ cblock  0x20''')
             out.extend((x for x in self.registers))
 
             out.append('''
-    endc
+ endc
 
 init    
-     MOVLW d'07'
-     MOVWF CMCON         ;Disable comparators
-     BSF STATUS, RP0     ;select bank1 for setup
-     BSF PCON, OSCF      ;select 4 MHz
-     MOVLW b'01110000'
-     MOVWF TRISA         ;set PortA as inputs on designated pins
-     MOVLW b'00000000'
-     MOVWF TRISB         ;set PortB all outputs
-     BCF STATUS, RP0     ;return to bank0 for program operation''')
+ MOVLW d'07'
+ MOVWF CMCON         ;Disable comparators
+ BSF STATUS, RP0     ;select bank1 for setup
+ BSF PCON, OSCF      ;select 4 MHz
+ MOVLW b'01110000'
+ MOVWF TRISA         ;set PortA as inputs on designated pins
+ MOVLW b'00000000'
+ MOVWF TRISB         ;set PortB all outputs
+ BCF STATUS, RP0     ;return to bank0 for program operation''')
 
             out.extend((" CLRF "+x for x in self.registers))
 
@@ -1002,7 +1002,7 @@ class CompilerSettingsWindow():
 
     def __init__(self,board,io):
         self.root=tk.Toplevel()
-        self.root.title('Compiler Settigs')
+        self.root.title('Compiler Settings')
 
         self.plain=ttk.Button(master=self.root,text="Plain",command=lambda:self.run_complier(board,io,typ="plain"))
         self.MPLab=ttk.Button(master=self.root,text="MPLab",command=lambda:self.run_complier(board,io,typ="MPLab"))
