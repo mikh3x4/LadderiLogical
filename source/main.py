@@ -67,7 +67,7 @@ class LadderLogic:
 
 
         self.compilermenu = tk.Menu(self.menubar, tearoff=0)
-        self.compilermenu.add_command(label="Options", command=lambda:CompilerSettingsWindow(self.board,self.io))
+        self.compilermenu.add_command(label="Options", command=lambda:CompilerSettingsWindow(self))
         self.compilermenu.add_separator()
         self.compilermenu.add_command(label="Generate for MPLab", command=lambda:Compiler(self,typ='MPLab'))
         self.compilermenu.add_command(label="Generate for Debugger", command=lambda:Compiler(self,typ='Debug'))

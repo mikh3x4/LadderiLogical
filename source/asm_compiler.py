@@ -1008,20 +1008,20 @@ init   
 
 class CompilerSettingsWindow():
 
-    def __init__(self,board,io):
+    def __init__(self,app):
         self.root=tk.Toplevel()
         self.root.title('Compiler Settings')
 
-        self.plain=ttk.Button(master=self.root,text="Plain",command=lambda:self.run_complier(board,io,typ="plain"))
-        self.MPLab=ttk.Button(master=self.root,text="MPLab",command=lambda:self.run_complier(board,io,typ="MPLab"))
-        self.Debug=ttk.Button(master=self.root,text="Debug",command=lambda:self.run_complier(board,io,typ="Debug"))
+        self.plain=ttk.Button(master=self.root,text="Plain",command=lambda:self.run_complier(app,typ="plain"))
+        self.MPLab=ttk.Button(master=self.root,text="MPLab",command=lambda:self.run_complier(app,typ="MPLab"))
+        self.Debug=ttk.Button(master=self.root,text="Debug",command=lambda:self.run_complier(app,typ="Debug"))
 
         self.plain.pack()
         self.MPLab.pack()
         self.Debug.pack()
 
-    def run_complier(self,board,io,typ):
-        Compiler(board,io,typ=typ)
+    def run_complier(self,app,typ):
+        Compiler(app,typ=typ)
         self.root.destroy()
 
         
