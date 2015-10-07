@@ -47,6 +47,9 @@ class Node:
     def set_bit_flag_names(self,bit_reg):
         self.bit_reg=bit_reg
 
+    def get_init_code(self):
+        return []
+
 
     def parse_relays(self,relay_example):
         i=relay_example.state_index
@@ -655,6 +658,9 @@ class SequencerNode(Node):
     def adjust_cycles(self,proposed_total_cycles):
         return 3*len(self.save_file['steps'])+10
 
+    def get_init_code(self):
+        return [" BSF "+self.bit_reg["flag_"+self.save_file["steps"][0]]]
+
 
     def generate_code(self,total_cycles):
 
@@ -693,7 +699,7 @@ class SequencerNode(Node):
             self.code.append(self.tile_label(self.x,self.y,seq_label))
 
 
-        self.code.append(" BSF "+self.bit_reg["flag_"+self.save_file["steps"][0]])
+        self.code.append(" BSF "+self.bit_reg["flag_"+self.save_file["steps"][0]]+" ;shouldn't be reached, old init")
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
 
 
@@ -948,6 +954,10 @@ init   
 
         if(self.typ=='Debug'):
             out.append("instructions='''")
+
+        for tile in self.tiles_linear:
+            out.extend(tile.get_init_code())
+
         out.append('main')
         for tile in self.tiles_linear:
             out.extend(tile.code)

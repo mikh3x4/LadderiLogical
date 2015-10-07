@@ -193,7 +193,7 @@ BSF seq_1
 goto out_2
 not_seq_3
 
-BSF seq_1 #first loop init
+BSF seq_1 #something broke (originaly initialization)
 goto end
 
 no_inc Delay 5
