@@ -669,62 +669,28 @@ class SequencerNode(Node):
 
 
 
+
         for position,step in enumerate(self.save_file['steps']):
 
             seq=self.bit_reg["flag_"+step]
+            next_seq=self.bit_reg["flag_"+self.save_file['steps'][(position+1)%len(self.save_file['steps'])]]
+
             seq_label="not_seq_"+step
+            out_label="out_"+step
 
 
             self.code.append(" BTFSS "+seq)
-            # BTFSS seq_1
-
-
-            # goto not_seq_1
             self.code.append(" goto "+self.tile_label(self.x,self.y,seq_label))
 
-            # BCF seq_1
-            # BSF seq_2
-            self.code.append(" BCF "+seq)
-            self.code.append(" BSF "+self.bit_reg["flag_"+self.save_file['steps'][(position+1)%len(self.save_file['steps'])]])
+            self.code.append(" BCF "+seq) 
+            self.code.append(" BSF "+next_seq)
 
-
-            # delay start at (n-1)*3 and count down
-
-            self.code.extend(self.delay_code(3*(len(self.save_file['steps'])-1)-position*3))
-
-
-            self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
-            # goto end
+            if(position==len(self.save_file['steps'])-1):
+                self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+            else:
+                self.code.append(" goto "+self.tile_label(self.x,self.y,out_label))
 
             self.code.append(self.tile_label(self.x,self.y,seq_label))
-            # not_seq_1 
-
-
-
-
-        # BTFSS seq_1
-        # goto not_seq_1
-        # BCF seq_1
-        # BSF seq_2
-        # delay start at (n-1)*3 and count down
-        # goto end
-        # not_seq_1 
-
-        # BTFSS seq_2
-        # goto not_seq_2
-        # BCF seq_2
-        # BSF seq_3
-        # delay 3
-        # goto end
-        # not_seq_2
-
-        # BTFSS seq_3
-        # goto not_seq_3
-        # BCF seq_3
-        # BSF seq_1
-        # delay 0
-        # goto end
-        # not_seq_3
 
 
         self.code.append(" BSF "+self.bit_reg["flag_"+self.save_file["steps"][0]])
@@ -732,16 +698,23 @@ class SequencerNode(Node):
 
 
         self.code.append(self.tile_label(self.x,self.y,"no_inc"))
+        self.code.extend(self.delay_code(5))
 
-        self.code.extend(self.delay_code(3*len(self.save_file['steps'])+2))
+        for position,step in enumerate(self.save_file['steps']):
+            out_label="out_"+step
+
+            if(position!=len(self.save_file['steps'])-1):
+                self.code.append(self.tile_label(self.x,self.y,out_label))
+                self.code.extend(self.delay_code(3))
+
 
         self.code.append(self.tile_label(self.x,self.y,"end"))
-
         self.code.append(" BCF "+edge)
         self.code.append(" BTFSC "+input_name)
         self.code.append(" BSF "+edge)
-        
         self.code.append(" BCF "+input_name)
+
+
 
 
 
