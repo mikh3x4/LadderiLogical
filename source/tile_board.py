@@ -56,6 +56,12 @@ class TileBoard(ttk.Frame):
         self.bind("h", lambda x:self.app.tools.change_tool("hswitch"))
         self.bind("x", lambda x:self.app.tools.change_tool("delete"))
 
+        self.root.bind("<Left>", lambda x:self.move_selection('l'))
+        self.root.bind("<Down>", lambda x:self.move_selection('d'))
+        self.root.bind("<Up>", lambda x:self.move_selection('u'))
+        self.root.bind("<Right>", lambda x:self.move_selection('r'))
+
+
 
         # self.canvas.bind("", lambda event: self.focus_set())
 
@@ -311,6 +317,35 @@ class TileBoard(ttk.Frame):
 
         print(self.tiles[self.sel_x][self.sel_y])
         self.tiles[self.sel_x][self.sel_y].frame.grid(column=1,row=1, sticky="nsew")
+
+    def move_selection(self,direction):
+        try:
+            self.tiles[self.sel_x][self.sel_y].frame.grid_forget()
+        except AttributeError:
+            print('Caugth error - no tile selected yet!')
+        except IndexError:
+            print("Unwelcome ERROR! Something wrong with selection")
+
+        assert(direction=='l' or direction=='r' or direction=='d' or direction=='u')
+
+        
+        if(direction=='l' and self.sel_x!=0):
+            self.sel_x-=1
+        elif(direction=='r' and self.sel_x!=len(self.tiles)-1):
+            self.sel_x+=1
+        elif(direction=='u'and self.sel_y!=0):
+            self.sel_y-=1
+        elif(direction=='d' and self.sel_y!=len(self.tiles[0])-1):
+            self.sel_y+=1
+
+        self.canvas.delete("selection_box")
+        self.canvas.create_rectangle(self.sel_x*self.tile_size,self.sel_y*self.tile_size,
+            self.sel_x*self.tile_size+self.tile_size,self.sel_y*self.tile_size+self.tile_size, tags="selection_box",outline="#0000FF")
+
+        print(self.tiles[self.sel_x][self.sel_y])
+        self.tiles[self.sel_x][self.sel_y].frame.grid(column=1,row=1, sticky="nsew")
+
+
 
     def find_tile_coords(self,event):
         global_x=event.x+self.xsb.get()[0]*self.total_size_x
