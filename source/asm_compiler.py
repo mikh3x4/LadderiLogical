@@ -811,7 +811,7 @@ class Compiler:
         i=0
         n=1
 
-        self.registers.append(bitflag_base_name+'_0')
+        self.registers.append(bitflag_base_name+'_1')
         for tile in self.tiles_linear:
             self.registers.extend(tile.get_register_names())
             bits=tile.get_bitflag_names()
