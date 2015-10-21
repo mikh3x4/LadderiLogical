@@ -29,7 +29,7 @@
 cblock  0x20
 ##REGISTERS GO HERE endc
 
-
+    endc
 
 init    
      MOVLW d'07'

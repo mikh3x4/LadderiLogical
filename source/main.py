@@ -1,5 +1,6 @@
 from tile_board import TileBoard
 from extra_ui import IOBoard, ToolBox
+from asm_compiler import Compiler, CompilerSettingsWindow
 import tkinter.ttk as ttk
 import tkinter as tk
 from tkinter import filedialog
@@ -8,6 +9,8 @@ import json
 
 
 class LadderLogic:
+
+    version='1.0 Alpha'
 
     def __init__(self,main_root,windows,file_data=None,file_name=""):
         self.main_root=main_root
@@ -62,6 +65,16 @@ class LadderLogic:
         self.filemenu.add_command(label="Exit", command=self.root.quit, accelerator="Command+Q")
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
+
+        self.compilermenu = tk.Menu(self.menubar, tearoff=0)
+        self.compilermenu.add_command(label="Options", command=lambda:CompilerSettingsWindow(self))
+        self.compilermenu.add_separator()
+        self.compilermenu.add_command(label="Generate for MPLab", command=lambda:Compiler(self,typ='MPLab'))
+        self.compilermenu.add_command(label="Generate for Debugger", command=lambda:Compiler(self,typ='Debug'))
+        self.compilermenu.add_command(label="Generate for Custom", command=lambda:Compiler(self,typ='Plain'))
+
+        self.menubar.add_cascade(label="Compiler", menu=self.compilermenu)
+
         self.root.config(menu=self.menubar)
 
         self.root.bind("<Command-n>", lambda x:self.file_new())
@@ -112,7 +125,7 @@ class LadderLogic:
     def file_save(self,file_to_save=None):
 
         file_data={}
-        file_data['0header']={"sys":"osx","POSIX":str(int(time())),"version":"1.0 Alpha"}
+        file_data['0header']={"sys":"osx","POSIX":str(int(time())),"version":self.version}
         file_data['settings']={"tile_size":self.board.tile_size}
         file_data['TileBoard']=self.board.save_to_file()
         file_data['IOBoard']=self.io.save_to_file()

@@ -2,6 +2,7 @@ import tiles as tiles_mod
 import math
 import tkinter as tk
 import tkinter.ttk as ttk
+import time
 
 class Node:
 
@@ -45,6 +46,9 @@ class Node:
 
     def set_bit_flag_names(self,bit_reg):
         self.bit_reg=bit_reg
+
+    def get_init_code(self):
+        return []
 
 
     def parse_relays(self,relay_example):
@@ -654,6 +658,9 @@ class SequencerNode(Node):
     def adjust_cycles(self,proposed_total_cycles):
         return 3*len(self.save_file['steps'])+10
 
+    def get_init_code(self):
+        return [" BSF "+self.bit_reg["flag_"+self.save_file["steps"][0]]]
+
 
     def generate_code(self,total_cycles):
 
@@ -668,85 +675,58 @@ class SequencerNode(Node):
 
 
 
+
         for position,step in enumerate(self.save_file['steps']):
 
             seq=self.bit_reg["flag_"+step]
+            next_seq=self.bit_reg["flag_"+self.save_file['steps'][(position+1)%len(self.save_file['steps'])]]
+
             seq_label="not_seq_"+step
+            out_label="out_"+step
 
 
             self.code.append(" BTFSS "+seq)
-            # BTFSS seq_1
-
-
-            # goto not_seq_1
             self.code.append(" goto "+self.tile_label(self.x,self.y,seq_label))
 
-            # BCF seq_1
-            # BSF seq_2
-            self.code.append(" BCF "+seq)
-            self.code.append(" BSF "+self.bit_reg["flag_"+self.save_file['steps'][(position+1)%len(self.save_file['steps'])]])
+            self.code.append(" BCF "+seq) 
+            self.code.append(" BSF "+next_seq)
 
-
-            # delay start at (n-1)*3 and count down
-
-            self.code.extend(self.delay_code(3*(len(self.save_file['steps'])-1)-position*3))
-
-
-            self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
-            # goto end
+            if(position==len(self.save_file['steps'])-1):
+                self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
+            else:
+                self.code.append(" goto "+self.tile_label(self.x,self.y,out_label))
 
             self.code.append(self.tile_label(self.x,self.y,seq_label))
-            # not_seq_1 
 
 
-
-
-        # BTFSS seq_1
-        # goto not_seq_1
-        # BCF seq_1
-        # BSF seq_2
-        # delay start at (n-1)*3 and count down
-        # goto end
-        # not_seq_1 
-
-        # BTFSS seq_2
-        # goto not_seq_2
-        # BCF seq_2
-        # BSF seq_3
-        # delay 3
-        # goto end
-        # not_seq_2
-
-        # BTFSS seq_3
-        # goto not_seq_3
-        # BCF seq_3
-        # BSF seq_1
-        # delay 0
-        # goto end
-        # not_seq_3
-
-
-        self.code.append(" BSF "+self.bit_reg["flag_"+self.save_file["steps"][0]])
+        self.code.append(" BSF "+self.bit_reg["flag_"+self.save_file["steps"][0]]+" ;shouldn't be reached, old init")
         self.code.append(" goto "+self.tile_label(self.x,self.y,"end"))
 
 
         self.code.append(self.tile_label(self.x,self.y,"no_inc"))
+        self.code.extend(self.delay_code(5))
 
-        self.code.extend(self.delay_code(3*len(self.save_file['steps'])+2))
+        for position,step in enumerate(self.save_file['steps']):
+            out_label="out_"+step
+
+            if(position!=len(self.save_file['steps'])-1):
+                self.code.append(self.tile_label(self.x,self.y,out_label))
+                self.code.extend(self.delay_code(3))
+
 
         self.code.append(self.tile_label(self.x,self.y,"end"))
-
         self.code.append(" BCF "+edge)
         self.code.append(" BTFSC "+input_name)
         self.code.append(" BSF "+edge)
-        
         self.code.append(" BCF "+input_name)
+
+
 
 
 
 class Compiler:
 
-    def __init__(self,board,io,typ="plain"):
+    def __init__(self,app,typ="plain"):
 
         self.typ=typ
 
@@ -761,8 +741,16 @@ class Compiler:
 
         self.proc_speed=4*10**6
         self.total_cycles=0
-        self.board=board
-        self.io=io
+        self.board=app.board
+        self.io=app.io
+
+        self.app_version=app.version
+        if(app.filename==""):
+            print('Compiling Unsaved project')
+            self.filename="Untitled Project"
+        else:
+            self.filename=app.filename
+
         self.registers=[]
 
         self.tiles_linear=[]
@@ -783,11 +771,11 @@ class Compiler:
         print(output_repete)
         for index,lis in enumerate(output_repete):
             for r in lis:
-                out.append(' BCF special_temp_PORTB,'+str(r))
-                out.append(' BTFSC special_temp_PORTB,'+str(index))
-                out.append(' BSF special_temp_PORTB,'+str(r))
+                out.append(' BCF special_temp_portb,'+str(r))
+                out.append(' BTFSC special_temp_portb,'+str(index))
+                out.append(' BSF special_temp_portb,'+str(r))
 
-        out.extend([' MOVF special_temp_PORTB,W',' MOVWF PORTB'])
+        out.extend([' MOVF special_temp_portb,W',' MOVWF PORTB'])
 
         return out
 
@@ -807,10 +795,8 @@ class Compiler:
                 output_repete[int(original_out[-1])].append(i)
 
             except KeyError:
-                self.bitflag_register_names["flag_"+flag]="special_temp_PORTB,"+str(i)#overwriting higher outputs
+                self.bitflag_register_names["flag_"+flag]="special_temp_portb,"+str(i)#overwriting higher outputs
 
-
-                
                 
             i+=1
 
@@ -859,56 +845,119 @@ class Compiler:
 
         #write code to out
         self.registers.extend(['special_temp_portb'])
-        if(self.typ=='Debug'):
-            self.registers.extend(['porta','portb'])
 
         out=[]
-        out.append(';Code generated by LadderiLogical')
-        out.append(';Total Cycles = '+str(total_cycles))
-        out.append('')
-        out.append(';Registers:')
-        out.extend(self.registers)
+
+        comment_header=''';----------------------------------------------------------;
+; Program title: '''+str(self.filename)+" "*(42-len(str(self.filename)))+''';
+;----------------------------------------------------------;
+; Code generated by: LadderiLogical '''+str(self.app_version)+" "*(23-len(str(self.app_version)))+''';
+;----------------------------------------------------------;
+; Date Compiled:  '''+time.strftime("%c")+'''                 ;
+;----------------------------------------------------------;
+; Version:  1.0                                            ;
+;----------------------------------------------------------;
+; Device:  PIC16F627A                                      ;
+;----------------------------------------------------------;
+; Oscillator: Internal 4  MHz                              ;
+;----------------------------------------------------------;
+; Cycles per main loop: '''+str(total_cycles)+" "*(35-len(str(total_cycles)))+''';
+;----------------------------------------------------------;'''
+
+        comment_char=';'
+        if(self.typ=='Debug'):
+            self.registers.extend(['porta','portb'])
+            comment_header=comment_header.replace(';','#')
+            comment_char='#'
+
+        out.append(comment_header)
 
         out.append('')
+        out.append(comment_char+'Registers:')
+        out.extend((comment_char+x for x in self.registers))
+
+        out.append('')
 
 
 
-        out.append(';Bitflags:')
+        out.append(comment_char+'Bitflags:')
         human_readable_register_names={v: k for k, v in self.bitflag_register_names.items()}
 
         for io_register in ("PORTA,"+str(i) for i in range(8)):
             try:
-                out.append(';'+io_register+': '+human_readable_register_names[io_register])
+                out.append(comment_char+io_register+': '+human_readable_register_names[io_register])
             except KeyError:
-                out.append(';'+io_register+':')
+                out.append(comment_char+io_register+':')
             else:
                 del human_readable_register_names[io_register]
 
-        for io_register in ("special_temp_PORTB,"+str(i) for i in range(8)):
+        for io_register in ("special_temp_portb,"+str(i) for i in range(8)):
             try:
-                out.append(';'+io_register+': '+human_readable_register_names[io_register])
+                out.append(comment_char+io_register+': '+human_readable_register_names[io_register])
             except KeyError:
-                out.append(';'+io_register+':')
+                out.append(comment_char+io_register+':')
             else:
                 del human_readable_register_names[io_register]
 
         human_readable_register_names={v: k for k, v in human_readable_register_names.items()}
         for tiles_bitflags,other_registers in sorted(human_readable_register_names.items()):
-            out.append(';'+other_registers+': '+tiles_bitflags)
+            out.append(comment_char+other_registers+': '+tiles_bitflags)
+        out.append('')
 
+        if(self.typ=='MPLab'):
+            out.append('''
+ LIST  P=PIC16F627A ;select device
+    ;Tells MPLAB what processor IC is being used
+  INCLUDE  c:\program files (x86)\microchip\MPASM Suite\P16F627A.inc
+    ;include header file
+    ;from default location
+    ;tells the MPLAB where to find the files
+
+  __config 0x3F10     ;sets config to; internal  I/O, no watchdog,Power
+    ;up timer on, master Reset off,
+    ;no brown-out, no LV program, no read protect,
+    ;no code protect
+;----------------------------------------------------------;
+; DEFINE REGISTERS                                         ;
+;----------------------------------------------------------;
+
+ cblock  0x20''')
+            out.extend((x for x in self.registers))
+
+            out.append('''
+ endc
+
+init    
+ MOVLW d'07'
+ MOVWF CMCON         ;Disable comparators
+ BSF STATUS, RP0     ;select bank1 for setup
+ BSF PCON, OSCF      ;select 4 MHz
+ MOVLW b'01110000'
+ MOVWF TRISA         ;set PortA as inputs on designated pins
+ MOVLW b'00000000'
+ MOVWF TRISB         ;set PortB all outputs
+ BCF STATUS, RP0     ;return to bank0 for program operation''')
+
+            out.extend((" CLRF "+x for x in self.registers))
 
 
         if(self.typ=='Debug'):
-            out.append('from PICClass import run_PIC')
+            out.append('from PICclass import run_PIC')
             out.append('reg=[')
             out.extend(("'"+x+"'," for x in self.registers))
             out.append(']')
+
+
 
 
         out.append('')
 
         if(self.typ=='Debug'):
             out.append("instructions='''")
+
+        for tile in self.tiles_linear:
+            out.extend(tile.get_init_code())
+
         out.append('main')
         for tile in self.tiles_linear:
             out.extend(tile.code)
@@ -942,20 +991,20 @@ class Compiler:
 
 class CompilerSettingsWindow():
 
-    def __init__(self,board,io):
+    def __init__(self,app):
         self.root=tk.Toplevel()
-        self.root.title('Compiler Settigs')
+        self.root.title('Compiler Settings')
 
-        self.plain=ttk.Button(master=self.root,text="Plain",command=lambda:self.run_complier(board,io,typ="plain"))
-        self.MPLab=ttk.Button(master=self.root,text="MPLab",command=lambda:self.run_complier(board,io,typ="MPLab"))
-        self.Debug=ttk.Button(master=self.root,text="Debug",command=lambda:self.run_complier(board,io,typ="Debug"))
+        self.plain=ttk.Button(master=self.root,text="Plain",command=lambda:self.run_complier(app,typ="plain"))
+        self.MPLab=ttk.Button(master=self.root,text="MPLab",command=lambda:self.run_complier(app,typ="MPLab"))
+        self.Debug=ttk.Button(master=self.root,text="Debug",command=lambda:self.run_complier(app,typ="Debug"))
 
         self.plain.pack()
         self.MPLab.pack()
         self.Debug.pack()
 
-    def run_complier(self,board,io,typ):
-        Compiler(board,io,typ=typ)
+    def run_complier(self,app,typ):
+        Compiler(app,typ=typ)
         self.root.destroy()
 
         

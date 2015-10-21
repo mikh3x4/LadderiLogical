@@ -1,3 +1,11 @@
+BUGNOTES::
+
+Pulsar shows cylces is 1cylce to short
+
+
+bit register naming starts at 0 but should srtart at 1
+
+
 TESTED:
 
 delay
@@ -74,7 +82,7 @@ out_2 delay 4
 out_3 delay k+3
 
 
-delay 6k+1 part1
+delay 6k+1 part1####BUG!!! ADDS one to time§
 BTFSS input_state
 delay 6k+1 part2 #ensure it is single line (goto forced)
 
@@ -165,7 +173,7 @@ BCF input_state
 
 
 
-sequencer: (cycle=3n+10)
+sequencer: cycle=3n+10
 
 BTFSS prev_edge
 BTFSS input_state
@@ -175,38 +183,37 @@ BTFSS seq_1
 goto not_seq_1
 BCF seq_1
 BSF seq_2
-delay start at (n-1)*3 and count down
-goto end
+goto out_0
 not_seq_1 
 
 BTFSS seq_2
 goto not_seq_2
 BCF seq_2
 BSF seq_3
-delay 3
-goto end
+goto out_1
 not_seq_2
+
 
 BTFSS seq_3
 goto not_seq_3
 BCF seq_3
 BSF seq_1
-delay 0
-goto end
+goto out_2
 not_seq_3
 
-BSF seq_1 #first lopop init -timing may be off
+BSF seq_1 #something broke (originaly initialization)
 goto end
 
-no_inc Delay 3n+2
+no_inc Delay 5
+out_0 Delay 3
+out_1 Delay 3
+out_2 Delay 0
 
-end 
+end
 BCF prev_edge
 BTFSC input_state
 BSF prev_edge
-
 BCF input_state
-
 
 
 
