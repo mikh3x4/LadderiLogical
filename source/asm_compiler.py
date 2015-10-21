@@ -109,11 +109,11 @@ class Node:
         if(3<cycles<7):
             return [" CALL small_delay_"+str(cycles)]
 
-        if(int(cycles/3)-2>255):
+        if(int(cycles/3)-1>255):
             raise OverflowError
 
         if(6<cycles):
-            return [" MOVLW "+"d'"+str(int(cycles/3)-2)+"'"," CALL delay3_"+str( 3 if cycles%3==0 else cycles%3)]
+            return [" MOVLW "+"d'"+str(int(cycles/3)-1)+"'"," CALL delay3_"+str( 3 if cycles%3==0 else cycles%3)]
 
 class SourceNode(Node):
 
@@ -533,7 +533,7 @@ class PulsarNode(Node):
         return out
 
     def get_minimum_cycles(self):
-        return 22+len(self.outputs)
+        return 23+len(self.outputs)
 
     def adjust_cycles(self,proposed_total_cycles):
 
@@ -542,7 +542,7 @@ class PulsarNode(Node):
         assert(self.loops_proposed)
 
         self.number_of_bytes=int(math.log(self.loops_proposed,2)//8)+1
-        return 15+len(self.outputs)+7*self.number_of_bytes
+        return 16+len(self.outputs)+7*self.number_of_bytes
 
 
     def generate_code(self,total_cycles):
@@ -614,7 +614,7 @@ class PulsarNode(Node):
 
         self.code.append(self.tile_label(self.x,self.y,"mid"))
 
-        delay_temp=self.delay_code(6*self.number_of_bytes+1)
+        delay_temp=self.delay_code(6*self.number_of_bytes+2)
 
         self.code.extend(delay_temp[:-1]) #ensure it is single line (goto forced)
 
@@ -989,7 +989,7 @@ init   
         " goto delay3_1",
         " return"]
 
-class CompilerSettingsWindow():
+class CompilerSettingsWindow:
 
     def __init__(self,app):
         self.root=tk.Toplevel()
