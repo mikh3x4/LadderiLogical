@@ -123,7 +123,9 @@ class SourceNode(Node):
     def adjust_cycles(self,proposed_total_cycles):
         return len(self.outputs)
 
-
+    def get_bitflag_names(self):
+        out=[]
+        return out
 
     def generate_code(self,total_cycles):
         for out in self.outputs:
