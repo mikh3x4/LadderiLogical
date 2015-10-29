@@ -751,7 +751,8 @@ class Compiler:
             print('Compiling Unsaved project')
             self.filename="Untitled Project"
         else:
-            self.filename=app.filename
+            self.filename=str(app.filename.split('/')[-1][:-4])
+            
 
         self.registers=[]
 
