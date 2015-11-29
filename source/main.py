@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import filedialog
 from time import time
 import json
+import sys
 
 
 class LadderLogic:
@@ -49,7 +50,7 @@ class LadderLogic:
         self.root.grid_columnconfigure(1,weight=0)
         self.root.grid_columnconfigure(2,weight=0)
 
-        # self.root.createcommand('::tk::mac::ShowPreferences', self.luanch_preferences)
+        # self.root.createcommand('::tk::mac::ShowPreferences', self.launch_preferences)
 
         self.menubar = tk.Menu(self.root)
 
@@ -125,7 +126,7 @@ class LadderLogic:
     def file_save(self,file_to_save=None):
 
         file_data={}
-        file_data['0header']={"sys":"osx","POSIX":str(int(time())),"version":self.version}
+        file_data['0header']={"sys":sys.platform,"time":str(int(time())),"version":self.version}
         file_data['settings']={"tile_size":self.board.tile_size}
         file_data['TileBoard']=self.board.save_to_file()
         file_data['IOBoard']=self.io.save_to_file()
@@ -146,8 +147,8 @@ class LadderLogic:
 
         self.filename=file_to_save
 
-    def luanch_preferences(self,event=None):
-        print("luanch_preferences")
+    def launch_preferences(self,event=None):
+        print("launch_preferences")
 
 
 
