@@ -881,7 +881,7 @@ class Timer(Tile):
 
         ttk.Radiobutton(master=self.frame, text="Hold", variable=self.timer_mode, value=1).pack()
         ttk.Radiobutton(master=self.frame, text="Delay Monostable", variable=self.timer_mode, value=2).pack()
-        ttk.Radiobutton(master=self.frame, text="Manaul", variable=self.timer_mode, value=3).pack()
+        # ttk.Radiobutton(master=self.frame, text="Manaul", variable=self.timer_mode, value=3).pack()
 
 
 

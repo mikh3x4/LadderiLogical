@@ -265,7 +265,7 @@ class CounterNode(Node):
         elif(self.save_file['reset']==0):
             self.generate_code_manualreset_sub255(total_cycles)
         else:
-            print("unimplmented counter configuration")
+            print("unimplemented counter configuration")
 
     def generate_code_manualreset_sub255(self,total_cycles):
 
@@ -358,16 +358,16 @@ class TimerNode(Node):
             return len(self.outputs)+14
         elif(self.save_file['mode']==2):
             #delay monostable
-            print("unimplmented timer (delay monostable) configuration")
-        elif(self.save_file['mode']==3):
-            #manual
-            print("unimplmented timer (manual) configuration")
+            return len(self.outputs)+26
         else:
-            print("unimplmented timer configuration")
+            print("unimplemented timer configuration")
+
+
 
     def adjust_cycles(self,proposed_total_cycles):
 
         self.loops_proposed=int((self.save_file['time_to']/1000)/((proposed_total_cycles)/self.proc_speed))
+        assert(self.loops_proposed)
 
         if(self.save_file['mode']==1):
             #hold config
@@ -378,31 +378,36 @@ class TimerNode(Node):
             else:
                 print("timer overflows two bytes")
 
-
         elif(self.save_file['mode']==2):
             #delay monostable
-            print("unimplmented timer (delay monostable) configuration")
-        elif(self.save_file['mode']==3):
-            #manual
-            print("unimplmented timer (manual) configuration")
+            self.number_of_bytes=int(math.log(self.loops_proposed,2)//8)+1
+            return 18+len(self.outputs)+8*self.number_of_bytes
+
         else:
-            print("unimplmented timer configuration")
+            print("unimplemented timer configuration")
 
     def get_bitflag_names(self):
         out=[self.tile_label(self.x,self.y,"con")]
 
-        if(self.save_file['mode']==3):
-            #manual mode
-            out.append(self.tile_label(self.x,self.y,"reset"))
-
         return out
+
 
     def get_register_names(self):
         out=[]
-        out.append(self.tile_label(self.x,self.y,"loop_counter_lo"))
-        #more registers in multi byte case
-        if(self.loops_proposed>255):
-            out.append(self.tile_label(self.x,self.y,"loop_counter_hi"))
+
+        if(self.save_file['mode']==1):
+            out.append(self.tile_label(self.x,self.y,"loop_counter_lo"))
+            #more registers in multi byte case
+            if(self.loops_proposed>255):
+                out.append(self.tile_label(self.x,self.y,"loop_counter_hi"))
+
+        elif(self.save_file['mode']==2):
+            #delay monostable
+            for i in range(self.number_of_bytes):
+                out.append(self.tile_label(self.x,self.y,"loop_counter_"+str(i)))
+
+        else:
+            print("unimplemented timer configuration")
 
         return out
 
@@ -423,12 +428,94 @@ class TimerNode(Node):
 
         elif(self.save_file['mode']==2):
             #delay monostable
-            print("unimplmented timer (delay monostable) configuration")
-        elif(self.save_file['mode']==3):
-            #manual
-            print("unimplmented timer (manual) configuration")
+            self.generate_code_mono(total_cycles)
         else:
-            print("unimplmented timer configuration")
+            print("unimplemented timer configuration")
+
+    def generate_code_mono(self,total_cycles):
+
+    print("unimplemented timer (delay monostable) configuration")
+
+    input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+
+
+    loop_vals=[]
+    loops=self.loops
+
+    for i in range(self.number_of_bytes):
+        loop_vals.append(loops%256)
+        loops=loops//256
+
+    # monostable k_byte: 8k+n+18
+
+    # BTFSC input_state
+    # BTFSC prev_state
+    # GOTO no_raise
+    # BSF out_state
+    # CLRF timer_0
+    # CLRF timer_1
+    # CLRF timer_2
+    # GOTO raise_end
+    # no_raise
+    # delay k+2
+    # raise_end
+
+
+    # BTFSS out_state
+    # GOTO no_inc
+
+    # INCF timer_0
+    # BTFSC STATUS,Z
+    # INCF timer_1
+    # BTFSC STATUS,Z
+    # INCF timer_2
+
+    # MOVLW loop_val_0
+    # XORWF timer_0, W
+    # BTFSS STATUS,Z
+    # GOTO out_0
+
+    # MOVLW loop_val_1
+    # XORWF timer_1, W
+    # BTFSS STATUS,Z
+    # GOTO out_1
+
+    # MOVLW loop_val_1
+    # XORWF timer_2, W
+    # BTFSS STATUS,Z
+    # GOTO out_2
+
+    # BCF out_state
+
+    # CLRF timer_0
+    # CLRF timer_1
+    # CLRF timer_2
+
+    # GOTO mid
+
+    # no_inc delay 2k+3
+    # out_0 delay 4
+    # out_1 delay 4
+    # out_2 delay k+2
+    # mid
+
+    # BTFSS out_state
+    # GOTO no_out
+
+    # BSF output
+    # BSF output
+    # BSF output...
+
+    # GOTO out_end
+    # no_out delay n+1
+    # out_end
+
+    # BCF prev_state
+    # BTFSC input_state
+    # BSF prev_state
+    # BCF input_state
+
+
 
 
     def generate_code_hold_1byte(self,total_cycles):
@@ -553,7 +640,7 @@ class PulsarNode(Node):
         self.loops=int((self.save_file['time_to']/1000)/((total_cycles)/self.proc_speed))
 
         if(self.number_of_bytes>5):
-            print("Are you sure? Number of bytes used for puslar is over 5!")
+            print("Are you sure? Number of bytes used for pulsar is over 5!")
 
         self.generate_kbyte_code(total_cycles)
 
