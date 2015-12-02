@@ -387,7 +387,7 @@ class TimerNode(Node):
             print("unimplemented timer configuration")
 
     def get_bitflag_names(self):
-        out=[self.tile_label(self.x,self.y,"con")]
+        out=[self.tile_label(self.x,self.y,"con"),self.tile_label(self.x,self.y,"prev"),self.tile_label(self.x,self.y,"state")]
 
         return out
 
@@ -437,7 +437,8 @@ class TimerNode(Node):
     print("unimplemented timer (delay monostable) configuration")
 
     input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
-
+    prev_state=self.bit_reg[self.tile_label(self.x,self.y,"prev")]
+    out_state=self.bit_reg[self.tile_label(self.x,self.y,"state")]
 
     loop_vals=[]
     loops=self.loops
@@ -502,19 +503,30 @@ class TimerNode(Node):
     # BTFSS out_state
     # GOTO no_out
 
+
+
     # BSF output
     # BSF output
     # BSF output...
+
+    for out in self.outputs:
+        self.code.append(" BSF "+self.bit_reg[out])
+
 
     # GOTO out_end
     # no_out delay n+1
     # out_end
 
-    # BCF prev_state
-    # BTFSC input_state
-    # BSF prev_state
-    # BCF input_state
+    self.code.append(" goto "+self.tile_label(self.x,self.y,"out_end"))
+    self.code.append(self.tile_label(self.x,self.y,"no_out"))
 
+    #DELAY N+1
+    self.code.append(self.tile_label(self.x,self.y,"out_end"))
+
+    self.code.append(" BCF "+prev_state)
+    self.code.append(" BTFSC "+input_name)
+    self.code.append(" BSF "+prev_state)
+    self.code.append(" BCF "+input_name)
 
 
 
