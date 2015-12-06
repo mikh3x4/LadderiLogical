@@ -438,7 +438,7 @@ class TimerNode(Node):
 
         print("potencially buggy implementation - monostable timer")
 
-        input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
+        input_state=self.bit_reg[self.tile_label(self.x,self.y,"con")]
         prev_state=self.bit_reg[self.tile_label(self.x,self.y,"prev")]
         out_state=self.bit_reg[self.tile_label(self.x,self.y,"state")]
 
@@ -584,9 +584,9 @@ class TimerNode(Node):
             # BCF input_state
 
         self.code.append(" BCF "+prev_state)
-        self.code.append(" BTFSC "+input_name)
+        self.code.append(" BTFSC "+input_state)
         self.code.append(" BSF "+prev_state)
-        self.code.append(" BCF "+input_name)
+        self.code.append(" BCF "+input_state)
 
 
 
