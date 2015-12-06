@@ -387,7 +387,9 @@ class TimerNode(Node):
             print("unimplemented timer configuration")
 
     def get_bitflag_names(self):
-        out=[self.tile_label(self.x,self.y,"con"),self.tile_label(self.x,self.y,"prev"),self.tile_label(self.x,self.y,"state")]
+        out=[self.tile_label(self.x,self.y,"con")]
+        if(self.save_file['mode']==2):
+            out.extend([self.tile_label(self.x,self.y,"prev"),self.tile_label(self.x,self.y,"state")])
 
         return out
 
@@ -434,7 +436,7 @@ class TimerNode(Node):
 
     def generate_code_mono(self,total_cycles):
 
-    print("unimplemented timer (delay monostable) configuration")
+    print("potencially buggy implementation - monostable timer")
 
     input_name=self.bit_reg[self.tile_label(self.x,self.y,"con")]
     prev_state=self.bit_reg[self.tile_label(self.x,self.y,"prev")]
@@ -449,79 +451,137 @@ class TimerNode(Node):
 
     # monostable k_byte: 8k+n+18
 
-    # BTFSC input_state
-    # BTFSC prev_state
-    # GOTO no_raise
-    # BSF out_state
-    # CLRF timer_0
-    # CLRF timer_1
-    # CLRF timer_2
-    # GOTO raise_end
-    # no_raise
-    # delay k+2
-    # raise_end
+        # BTFSC input_state
+    self.code.append(" BTFSC "+input_state)
+
+        # BTFSC prev_state
+    self.code.append(" BTFSC "+prev_state)
+
+        # GOTO no_raise
+    self.code.append(" goto "+self.tile_label(self.x,self.y,"no_raise"))
+
+        # BSF out_state
+        self.code.append(" BSF "+out_state)
+
+        # CLRF timer_0
+        # CLRF timer_1
+        # CLRF timer_2
+
+    for i in range(self.number_of_bytes):
+        self.code.append(" CLRF "+self.tile_label(self.x,self.y,"loop_counter_"+str(i)))
+
+        # GOTO raise_end
+    self.code.append(" goto "+self.tile_label(self.x,self.y,"raise_end"))
+
+        # no_raise
+    self.code.append(self.tile_label(self.x,self.y,"no_raise"))
 
 
-    # BTFSS out_state
-    # GOTO no_inc
+        # delay k+2
+    self.code.extend(self.delay_code(2+self.number_of_bytes))
 
-    # INCF timer_0
-    # BTFSC STATUS,Z
-    # INCF timer_1
-    # BTFSC STATUS,Z
-    # INCF timer_2
-
-    # MOVLW loop_val_0
-    # XORWF timer_0, W
-    # BTFSS STATUS,Z
-    # GOTO out_0
-
-    # MOVLW loop_val_1
-    # XORWF timer_1, W
-    # BTFSS STATUS,Z
-    # GOTO out_1
-
-    # MOVLW loop_val_1
-    # XORWF timer_2, W
-    # BTFSS STATUS,Z
-    # GOTO out_2
-
-    # BCF out_state
-
-    # CLRF timer_0
-    # CLRF timer_1
-    # CLRF timer_2
-
-    # GOTO mid
-
-    # no_inc delay 2k+3
-    # out_0 delay 4
-    # out_1 delay 4
-    # out_2 delay k+2
-    # mid
-
-    # BTFSS out_state
-    # GOTO no_out
+        # raise_end
+    self.code.append(self.tile_label(self.x,self.y,"raise_end"))
 
 
+        # BTFSS out_state
+        # GOTO no_inc
+    self.code.append(" BTFSS "+out_state)
+    self.code.append(" goto "+self.tile_label(self.x,self.y,"no_inc"))
 
-    # BSF output
-    # BSF output
-    # BSF output...
+        # INCF timer_0
+        # BTFSC STATUS,Z
+        # INCF timer_1
+        # BTFSC STATUS,Z
+        # INCF timer_2
+
+    for i in range(self.number_of_bytes):
+        if(i!=0):
+            self.code.append(" BTFSC STATUS,Z")
+        self.code.append(" INCF "+self.tile_label(self.x,self.y,"loop_counter_"+str(i))+",W")
+        
+
+        # MOVLW loop_val_0
+        # XORWF timer_0, W
+        # BTFSS STATUS,Z
+        # GOTO out_0
+
+        # MOVLW loop_val_1
+        # XORWF timer_1, W
+        # BTFSS STATUS,Z
+        # GOTO out_1
+
+        # MOVLW loop_val_1
+        # XORWF timer_2, W
+        # BTFSS STATUS,Z
+        # GOTO out_2
+
+    for i in range(self.number_of_bytes):
+        self.code.append(" MOVLW d'"+str(loop_vals[i])+"'")
+        self.code.append(" XORWF "+self.tile_label(self.x,self.y,"loop_counter_"+str(i))+",W")
+        self.code.append(" BTFSS STATUS,Z")
+        self.code.append(" goto "+self.tile_label(self.x,self.y,"out_"+str(i)))
+
+
+        # BCF out_state
+    self.code.append(" BCF "+out_state)
+
+        # CLRF timer_0
+        # CLRF timer_1
+        # CLRF timer_2
+    for i in range(self.number_of_bytes):
+        self.code.append(" CLRF "+self.tile_label(self.x,self.y,"loop_counter_"+str(i)))
+
+        # GOTO mid
+    self.code.append(" goto "+self.tile_label(self.x,self.y,"mid"))
+
+        # no_inc delay 2k+3
+    self.code.append(self.tile_label(self.x,self.y,"no_inc"))
+    self.code.extend(self.delay_code(2*self.number_of_bytes+3))
+
+
+        # out_0 delay 4
+        # out_1 delay 4
+        # out_2 delay k+2
+
+    for i in range(self.number_of_bytes):
+        self.code.append(self.tile_label(self.x,self.y,"out_"+str(i)))
+
+        if(i==self.number_of_bytes-1):
+            self.code.extend(self.delay_code(self.number_of_bytes+2))
+        else:
+            self.code.extend(self.delay_code(4))
+
+
+        # mid
+    self.code.append(self.tile_label(self.x,self.y,"mid"))
+        # BTFSS out_state
+    self.code.append(" BTFSS "+out_state)
+        # GOTO no_out
+    self.code.append(" goto "+self.tile_label(self.x,self.y,"no_out"))
+
+
+        # BSF output
+        # BSF output
+        # BSF output...
 
     for out in self.outputs:
         self.code.append(" BSF "+self.bit_reg[out])
 
 
-    # GOTO out_end
-    # no_out delay n+1
-    # out_end
+        # GOTO out_end
+        # no_out delay n+1
+        # out_end
 
     self.code.append(" goto "+self.tile_label(self.x,self.y,"out_end"))
     self.code.append(self.tile_label(self.x,self.y,"no_out"))
-
-    #DELAY N+1
+    self.code.extend(self.delay_code(len(self.outputs)+1))
     self.code.append(self.tile_label(self.x,self.y,"out_end"))
+
+        # BCF prev_state
+        # BTFSC input_state
+        # BSF prev_state
+        # BCF input_state
 
     self.code.append(" BCF "+prev_state)
     self.code.append(" BTFSC "+input_name)
