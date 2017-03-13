@@ -1,3 +1,11 @@
+'''
+File name: tiles.py
+Author: Michal Adamkiewicz
+Date: 2014 - 2015
+
+This file implements the actual tiles where the logic takes place. Each class also includes the tile's look
+'''
+
 import tkinter.ttk as ttk
 import tkinter as tk
 

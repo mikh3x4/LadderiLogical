@@ -1,3 +1,11 @@
+'''
+File name: extra_ui.py
+Author: Michal Adamkiewicz
+Date: 2014 - 2015
+
+This file implements the extra UI elements such as the input/output panel and directional selectors
+'''
+
 import tkinter.ttk as ttk
 import tkinter as tk
 from asm_compiler import CompilerSettingsWindow

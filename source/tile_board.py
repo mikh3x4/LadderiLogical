@@ -1,3 +1,11 @@
+'''
+File name: tile_board.py
+Author: Michal Adamkiewicz
+Date: 2014 - 2015
+
+This file implements the UI board layout and forwards the signals between the tiles
+'''
+
 from tiles import Tile, Relay, Source, Flag, Generator, Switch, Counter,Pulsar,Timer,Sequencer
 import tkinter.ttk as ttk
 import tkinter as tk
@@ -390,7 +398,7 @@ class TileBoard(ttk.Frame):
             self.after(10,self.update_all)
 
         
-        # size increase prvision
+        # size increase provision
         # if(global_x>900):
         #     self.canvas.configure(scrollregion=(0,0,1500,1500))
         #     self.total_size_x=self.total_size_y=1500

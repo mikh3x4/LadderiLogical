@@ -1,3 +1,12 @@
+'''
+File name: asm_compiler.py
+Author: Michal Adamkiewicz
+Date: 2014 - 2015
+
+This file takes the graphical tile representation and compiles it into PIC assembly 
+which can be turned into an executable using the assembler included with MPLab
+'''
+
 import tiles as tiles_mod
 import math
 import tkinter as tk

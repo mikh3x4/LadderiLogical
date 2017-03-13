@@ -1,3 +1,12 @@
+'''
+File name: main.py
+Author: Michal Adamkiewicz
+Date: 2014 - 2015
+
+This file implements the top level UI LadderiLogical and file handling
+'''
+
+
 from tile_board import TileBoard
 from extra_ui import IOBoard, ToolBox
 from asm_compiler import Compiler, CompilerSettingsWindow
