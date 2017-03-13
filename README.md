@@ -26,11 +26,11 @@ To upload it to a PIC you need open the generated file in MPLab and  assemble it
 ###Keyboard shortcuts:
 
 <pre>
-	s: <b>S</b>elect tile
-	a: Place wire and <b>a</b>utomaticly determine direction
-	f: Place <b>f</b>lag input tile
-	h: Place switch tile and configure input/output <b>h</b>orizontaly
-	x: Delete tile
+	S: <b>S</b>elect tile
+	A: Place wire and <b>a</b>utomaticly determine direction
+	F: Place <b>f</b>lag input tile
+	H: Place switch tile and configure input/output <b>h</b>orizontaly
+	X: Delete tile
 	
 	The arrow keys move the selection around
 	
@@ -39,4 +39,9 @@ To upload it to a PIC you need open the generated file in MPLab and  assemble it
 	
 </pre>
 	
-	
+### Building
+
+This collection of python scipts can be converted into an Mac Application bundle using py2app. Just run `python3 setup_mac.py py2app`
+
+Michal Adamkiewicz 2017
+
