@@ -1,6 +1,14 @@
 __pycache__
 .DS_Store
+
 *.egg
 dist/
 build/
 virtenv/
+
+.Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+*.so

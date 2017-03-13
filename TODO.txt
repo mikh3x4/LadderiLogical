@@ -1,5 +1,3 @@
-
-
 -Add protection to actions that may cause loss of data
 
 -Add visuals to unsaved files
