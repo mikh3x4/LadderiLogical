@@ -1,0 +1,7 @@
+altgraph (0.12)
+macholib (1.7)
+modulegraph (0.12.1)
+pip (7.1.2)
+py2app (0.9)
+setuptools (18.2)
+wheel (0.24.0)
